@@ -1,82 +1,68 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/c5530eba-c9a4-45d0-b3b8-b97285df77dc/files/7ce7ef9f-4712-4898-b8ee-4c3a344835df.jpg";
 
 const SERVERS = [
-  { id: 1, country: "Германия", city: "Франкфурт", flag: "🇩🇪", x: 48.5, y: 32, ping: 12, load: 35, status: "online" },
-  { id: 2, country: "США", city: "Нью-Йорк", flag: "🇺🇸", x: 22, y: 36, ping: 87, load: 67, status: "online" },
-  { id: 3, country: "США", city: "Лос-Анджелес", flag: "🇺🇸", x: 12, y: 40, ping: 102, load: 45, status: "online" },
-  { id: 4, country: "Нидерланды", city: "Амстердам", flag: "🇳🇱", x: 47, y: 29, ping: 18, load: 22, status: "online" },
-  { id: 5, country: "Япония", city: "Токио", flag: "🇯🇵", x: 80, y: 36, ping: 145, load: 58, status: "online" },
-  { id: 6, country: "Великобритания", city: "Лондон", flag: "🇬🇧", x: 45, y: 28, ping: 21, load: 41, status: "online" },
-  { id: 7, country: "Сингапур", city: "Сингапур", flag: "🇸🇬", x: 74, y: 55, ping: 178, load: 33, status: "online" },
-  { id: 8, country: "Канада", city: "Торонто", flag: "🇨🇦", x: 19, y: 30, ping: 95, load: 28, status: "online" },
-  { id: 9, country: "Австралия", city: "Сидней", flag: "🇦🇺", x: 82, y: 72, ping: 220, load: 15, status: "maintenance" },
-  { id: 10, country: "Швейцария", city: "Цюрих", flag: "🇨🇭", x: 49, y: 32, ping: 14, load: 19, status: "online" },
-  { id: 11, country: "Франция", city: "Париж", flag: "🇫🇷", x: 46.5, y: 31, ping: 16, load: 44, status: "online" },
-  { id: 12, country: "Бразилия", city: "Сан-Паулу", flag: "🇧🇷", x: 30, y: 65, ping: 198, load: 52, status: "online" },
+  { id: 1, city: "Франкфурт", flag: "🇩🇪", x: 48.5, y: 32 },
+  { id: 2, city: "Нью-Йорк", flag: "🇺🇸", x: 22, y: 36 },
+  { id: 3, city: "Лос-Анджелес", flag: "🇺🇸", x: 12, y: 40 },
+  { id: 4, city: "Амстердам", flag: "🇳🇱", x: 47, y: 29 },
+  { id: 5, city: "Токио", flag: "🇯🇵", x: 80, y: 36 },
+  { id: 6, city: "Лондон", flag: "🇬🇧", x: 45, y: 28 },
+  { id: 7, city: "Сингапур", flag: "🇸🇬", x: 74, y: 55 },
+  { id: 8, city: "Торонто", flag: "🇨🇦", x: 19, y: 30 },
+  { id: 9, city: "Сидней", flag: "🇦🇺", x: 82, y: 72 },
+  { id: 10, city: "Цюрих", flag: "🇨🇭", x: 49.5, y: 31 },
+  { id: 11, city: "Париж", flag: "🇫🇷", x: 46.5, y: 31 },
+  { id: 12, city: "Сан-Паулу", flag: "🇧🇷", x: 30, y: 65 },
 ];
 
 const PLANS = [
   {
     name: "BASIC",
     price: "299",
-    period: "мес",
-    color: "cyan",
-    features: ["5 устройств", "10 стран", "AES-256 шифрование", "100 Мбит/с", "Поддержка 24/7"],
+    features: ["5 устройств", "10 стран", "100 Мбит/с"],
     popular: false,
   },
   {
     name: "PRO",
     price: "599",
-    period: "мес",
-    color: "purple",
-    features: ["Безлимит устройств", "50+ стран", "AES-256 + WireGuard", "1 Гбит/с", "Приоритетная поддержка", "Выделенный IP"],
+    features: ["Безлимит устройств", "50+ стран", "1 Гбит/с", "Выделенный IP"],
     popular: true,
   },
   {
     name: "ULTRA",
     price: "1199",
-    period: "мес",
-    color: "cyan",
-    features: ["Безлимит устройств", "Все страны", "Мульти-протокол", "10 Гбит/с", "Персональный менеджер", "Выделенный IP", "Бизнес-аналитика"],
+    features: ["Безлимит устройств", "Все страны", "10 Гбит/с", "Персональный менеджер"],
     popular: false,
   },
 ];
 
 const FAQ_ITEMS = [
-  { q: "Что такое NeoShield VPN?", a: "NeoShield VPN — это сервис для шифрования вашего интернет-трафика. Все данные проходят через защищённый туннель, что делает вас невидимым для провайдеров и злоумышленников." },
-  { q: "Сколько устройств можно подключить?", a: "На тарифе BASIC — до 5 устройств одновременно. На тарифах PRO и ULTRA количество устройств не ограничено." },
-  { q: "Есть ли логи активности?", a: "Нет. Мы придерживаемся политики нулевого логирования. Ваши данные, история посещений и IP-адрес не хранятся на наших серверах." },
-  { q: "Какие протоколы поддерживаются?", a: "Мы поддерживаем OpenVPN, WireGuard, IKEv2 и собственный протокол NeoTunnel с двойным шифрованием." },
-  { q: "Есть ли бесплатный пробный период?", a: "Да, первые 7 дней бесплатно на любом тарифе. Для активации нужна только электронная почта." },
+  { q: "Есть ли логи активности?", a: "Нет. Политика нулевого логирования — ваши данные и IP-адрес не хранятся." },
+  { q: "Какие протоколы поддерживаются?", a: "OpenVPN, WireGuard, IKEv2 и собственный протокол NeoTunnel с двойным шифрованием." },
+  { q: "Есть ли пробный период?", a: "Да, 7 дней бесплатно на любом тарифе. Только почта — карта не нужна." },
+  { q: "Сколько устройств можно подключить?", a: "BASIC — до 5 устройств. PRO и ULTRA — без ограничений." },
 ];
 
 const NAV_ITEMS = [
   { id: "home", label: "ГЛАВНАЯ" },
-  { id: "connect", label: "ПОДКЛЮЧИТЬСЯ" },
   { id: "plans", label: "ТАРИФЫ" },
   { id: "servers", label: "СЕРВЕРЫ" },
-  { id: "status", label: "СТАТУСЫ" },
   { id: "faq", label: "FAQ" },
   { id: "contacts", label: "КОНТАКТЫ" },
 ];
+
+type AuthMode = "login" | "register";
 
 export default function Index() {
   const [activeSection, setActiveSection] = useState("home");
   const [selectedServer, setSelectedServer] = useState<typeof SERVERS[0] | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [particles] = useState(() =>
-    Array.from({ length: 50 }, () => ({
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 0.5,
-      delay: Math.random() * 8,
-      duration: 5 + Math.random() * 8,
-    }))
-  );
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -85,55 +71,131 @@ export default function Index() {
     setMenuOpen(false);
   };
 
-  const getLoadColor = (load: number) => {
-    if (load < 40) return "#39ff14";
-    if (load < 70) return "#ffcc00";
-    return "#ff3355";
+  const openAuth = (mode: AuthMode) => {
+    setAuthMode(mode);
+    setAuthOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-dark-bg text-white font-ibm relative overflow-x-hidden">
-      {/* Background particles */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        {particles.map((p, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-neon-cyan"
-            style={{
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-              opacity: 0.3,
-              animation: `float ${p.duration}s ease-in-out ${p.delay}s infinite`,
-            }}
-          />
-        ))}
-      </div>
+      {/* Grid background */}
+      <div className="fixed inset-0 pointer-events-none z-0 grid-bg opacity-30" />
+      <div className="fixed inset-0 pointer-events-none z-0 bg-gradient-radial from-neon-cyan/3 via-transparent to-transparent" />
+
+      {/* AUTH MODAL */}
+      {authOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && setAuthOpen(false)}
+        >
+          <div className="absolute inset-0 bg-dark-bg/80 backdrop-blur-sm" onClick={() => setAuthOpen(false)} />
+          <div className="relative w-full max-w-md cyber-card rounded-lg p-8 animate-scale-in">
+            {/* Close */}
+            <button
+              onClick={() => setAuthOpen(false)}
+              className="absolute top-4 right-4 text-white/30 hover:text-neon-cyan transition-colors"
+            >
+              <Icon name="X" size={18} />
+            </button>
+
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-7 h-7 relative flex items-center justify-center">
+                <div className="absolute inset-0 border border-neon-cyan rotate-45 animate-neon-pulse" />
+                <Icon name="Shield" size={12} className="text-neon-cyan relative z-10" />
+              </div>
+              <span className="font-orbitron text-sm font-bold neon-text-cyan tracking-widest">
+                NEO<span className="text-white/60">SHIELD</span>
+              </span>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex mb-8 border-b border-dark-border">
+              {(["login", "register"] as AuthMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setAuthMode(mode)}
+                  className={`flex-1 pb-3 font-orbitron text-xs tracking-widest transition-all duration-200 ${
+                    authMode === mode
+                      ? "text-neon-cyan border-b-2 border-neon-cyan -mb-px"
+                      : "text-white/30 hover:text-white/60"
+                  }`}
+                >
+                  {mode === "login" ? "ВХОД" : "РЕГИСТРАЦИЯ"}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              {authMode === "register" && (
+                <div>
+                  <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">ИМЯ</label>
+                  <input
+                    type="text"
+                    placeholder="Ваше имя"
+                    className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">EMAIL</label>
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
+                />
+              </div>
+              <div>
+                <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">ПАРОЛЬ</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
+                />
+              </div>
+
+              {authMode === "login" && (
+                <div className="text-right">
+                  <button className="font-mono-ibm text-xs text-white/30 hover:text-neon-cyan transition-colors">
+                    Забыли пароль?
+                  </button>
+                </div>
+              )}
+
+              <button className="w-full cyber-btn-primary py-3.5 text-xs rounded font-orbitron tracking-widest mt-2">
+                {authMode === "login" ? "ВОЙТИ →" : "СОЗДАТЬ АККАУНТ →"}
+              </button>
+
+              {authMode === "register" && (
+                <p className="font-mono-ibm text-xs text-white/30 text-center leading-relaxed">
+                  7 дней бесплатно · Карта не нужна
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-bg/90 backdrop-blur-md border-b border-dark-border">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-dark-bg/90 backdrop-blur-md border-b border-dark-border">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <button onClick={() => scrollTo("home")} className="flex items-center gap-3">
-            <div className="w-8 h-8 relative flex items-center justify-center">
-              <div className="absolute inset-0 border-2 border-neon-cyan rotate-45 animate-neon-pulse" />
-              <Icon name="Shield" size={14} className="text-neon-cyan relative z-10" />
+            <div className="w-7 h-7 relative flex items-center justify-center">
+              <div className="absolute inset-0 border border-neon-cyan rotate-45 animate-neon-pulse" />
+              <Icon name="Shield" size={12} className="text-neon-cyan relative z-10" />
             </div>
-            <span className="font-orbitron text-lg font-bold neon-text-cyan tracking-widest">
-              NEO<span className="text-neon-purple">SHIELD</span>
+            <span className="font-orbitron text-base font-bold neon-text-cyan tracking-widest">
+              NEO<span className="text-white/50">SHIELD</span>
             </span>
           </button>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-6">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => scrollTo(item.id)}
-                className={`px-3 py-1.5 font-orbitron text-xs tracking-widest transition-all duration-300 ${
-                  activeSection === item.id
-                    ? "text-neon-cyan border-b border-neon-cyan"
-                    : "text-white/50 hover:text-neon-cyan"
+                className={`font-orbitron text-xs tracking-widest transition-all duration-200 ${
+                  activeSection === item.id ? "text-neon-cyan" : "text-white/40 hover:text-white/80"
                 }`}
               >
                 {item.label}
@@ -141,29 +203,45 @@ export default function Index() {
             ))}
           </div>
 
-          <button
-            onClick={() => scrollTo("connect")}
-            className="hidden md:block cyber-btn-primary px-4 py-2 text-xs rounded"
-          >
-            ПОДКЛЮЧИТЬСЯ
-          </button>
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => openAuth("login")}
+              className="font-orbitron text-xs tracking-widest text-white/50 hover:text-neon-cyan transition-colors px-3 py-2"
+            >
+              ВОЙТИ
+            </button>
+            <button
+              onClick={() => openAuth("register")}
+              className="cyber-btn-primary px-4 py-2 text-xs rounded"
+            >
+              НАЧАТЬ
+            </button>
+          </div>
 
           <button className="md:hidden text-neon-cyan" onClick={() => setMenuOpen(!menuOpen)}>
-            <Icon name={menuOpen ? "X" : "Menu"} size={24} />
+            <Icon name={menuOpen ? "X" : "Menu"} size={22} />
           </button>
         </div>
 
         {menuOpen && (
-          <div className="md:hidden bg-dark-card border-t border-dark-border py-4 px-4 flex flex-col gap-2 animate-fade-in">
+          <div className="md:hidden bg-dark-card border-t border-dark-border py-4 px-6 flex flex-col gap-3 animate-fade-in">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => scrollTo(item.id)}
-                className="text-left py-2 font-orbitron text-xs tracking-widest text-white/70 hover:text-neon-cyan transition-colors"
+                className="text-left font-orbitron text-xs tracking-widest text-white/60 hover:text-neon-cyan transition-colors py-1"
               >
                 {item.label}
               </button>
             ))}
+            <div className="flex gap-3 pt-2 border-t border-dark-border">
+              <button onClick={() => { openAuth("login"); setMenuOpen(false); }} className="flex-1 py-2 font-orbitron text-xs text-white/50 border border-dark-border rounded hover:border-neon-cyan hover:text-neon-cyan transition-colors">
+                ВОЙТИ
+              </button>
+              <button onClick={() => { openAuth("register"); setMenuOpen(false); }} className="flex-1 cyber-btn-primary py-2 text-xs rounded">
+                НАЧАТЬ
+              </button>
+            </div>
           </div>
         )}
       </nav>
@@ -171,189 +249,117 @@ export default function Index() {
       {/* ═══ HERO ═══ */}
       <section id="home" className="relative min-h-screen flex items-center pt-16">
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-20 scanline"
+          className="absolute inset-0 bg-cover bg-center opacity-10"
           style={{ backgroundImage: `url(${HERO_IMAGE})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-dark-bg via-dark-bg/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-dark-bg/60 via-transparent to-dark-bg" />
+        <div className="absolute inset-0 bg-gradient-to-r from-dark-bg via-dark-bg/40 to-dark-bg/80" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 border border-neon-cyan/40 bg-neon-cyan/5 rounded font-mono-ibm text-xs text-neon-cyan">
-              <div className="w-2 h-2 rounded-full status-dot-online" />
-              СИСТЕМА АКТИВНА · 99.9% UPTIME
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-20">
+          <div className="max-w-2xl space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-neon-cyan/30 bg-neon-cyan/5 rounded font-mono-ibm text-xs text-neon-cyan/80">
+              <div className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-neon-pulse" />
+              AES-256 · ZERO LOGS · 50+ СЕРВЕРОВ
             </div>
 
-            <h1 className="font-orbitron text-5xl md:text-7xl font-black leading-none animate-fade-in-up">
-              <span className="neon-text-cyan animate-flicker">NEO</span>
-              <br />
-              <span className="text-white">SHIELD</span>
-              <br />
-              <span className="neon-text-purple text-3xl md:text-4xl font-medium tracking-widest">VPN</span>
+            <h1 className="font-orbitron font-black leading-none">
+              <span className="block text-6xl md:text-8xl neon-text-cyan animate-flicker">NEO</span>
+              <span className="block text-6xl md:text-8xl text-white">SHIELD</span>
+              <span className="block text-2xl md:text-3xl text-white/30 font-light tracking-[0.3em] mt-2">VPN</span>
             </h1>
 
-            <p className="text-white/60 text-lg leading-relaxed max-w-lg">
-              Защита нового поколения для вашего цифрового присутствия.<br />
-              Анонимность. Скорость. Свобода.
+            <p className="text-white/50 text-base leading-relaxed max-w-md font-ibm">
+              Анонимность. Скорость. Свобода.<br />
+              Защита нового поколения.
             </p>
 
-            <div className="flex flex-wrap gap-4">
-              <button onClick={() => scrollTo("connect")} className="cyber-btn-primary px-8 py-4 text-sm rounded">
-                НАЧАТЬ ЗАЩИТУ →
+            <div className="flex flex-wrap gap-3">
+              <button onClick={() => openAuth("register")} className="cyber-btn-primary px-8 py-4 text-xs rounded">
+                ПОПРОБОВАТЬ 7 ДНЕЙ →
               </button>
-              <button onClick={() => scrollTo("plans")} className="cyber-btn-secondary px-8 py-4 text-sm rounded">
+              <button onClick={() => scrollTo("plans")} className="px-8 py-4 text-xs font-orbitron tracking-widest text-white/40 border border-dark-border rounded hover:border-neon-cyan/40 hover:text-white/70 transition-all">
                 ТАРИФЫ
               </button>
             </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { label: "СЕРВЕРОВ", value: "50+" },
-                { label: "СТРАН", value: "30+" },
-                { label: "ПОЛЬЗОВАТЕЛЕЙ", value: "100K+" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="font-orbitron text-2xl font-bold neon-text-cyan">{stat.value}</div>
-                  <div className="font-mono-ibm text-xs text-white/40 tracking-widest mt-1">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Globe */}
-          <div className="hidden md:flex items-center justify-center animate-float">
-            <div className="relative w-80 h-80">
-              <div className="absolute inset-0 rounded-full border border-neon-cyan/20 animate-neon-pulse" />
-              <div className="absolute inset-4 rounded-full border border-neon-purple/20" style={{ animation: "neon-pulse 3s ease-in-out infinite reverse" }} />
-              <div className="absolute inset-8 rounded-full border border-neon-cyan/30" style={{ animation: "neon-pulse 2.5s ease-in-out infinite" }} />
-              <div className="absolute inset-0 rounded-full opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${HERO_IMAGE})` }} />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-neon-cyan/10 to-neon-purple/10" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Icon name="Shield" size={80} className="text-neon-cyan opacity-60" />
-              </div>
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-3 h-3 rounded-full"
-                  style={{
-                    background: i % 2 === 0 ? "#00ffff" : "#bf5fff",
-                    boxShadow: `0 0 8px ${i % 2 === 0 ? "#00ffff" : "#bf5fff"}`,
-                    left: `${50 + 45 * Math.cos((i * Math.PI * 2) / 8)}%`,
-                    top: `${50 + 45 * Math.sin((i * Math.PI * 2) / 8)}%`,
-                    transform: "translate(-50%, -50%)",
-                    animation: `pulse-green ${1 + i * 0.3}s infinite`,
-                  }}
-                />
-              ))}
-            </div>
           </div>
         </div>
+
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-bg to-transparent" />
       </section>
 
-      {/* ═══ CONNECT ═══ */}
-      <section id="connect" className="relative py-24 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="font-mono-ibm text-neon-cyan text-xs tracking-widest mb-3">// БЫСТРОЕ ПОДКЛЮЧЕНИЕ</div>
-            <h2 className="font-orbitron text-4xl font-bold text-white">
-              АКТИВИРОВАТЬ <span className="neon-text-purple">ЗАЩИТУ</span>
-            </h2>
-          </div>
-
-          <div className="cyber-card rounded-lg p-8 space-y-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="font-mono-ibm text-xs text-white/50 tracking-widest mb-2 block">EMAIL</label>
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
-                />
+      {/* ═══ FEATURES strip ═══ */}
+      <section className="py-16 px-6 border-y border-dark-border">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            { icon: "Lock", label: "AES-256", sub: "Шифрование" },
+            { icon: "Zap", label: "WireGuard", sub: "Протокол" },
+            { icon: "EyeOff", label: "No Logs", sub: "Политика" },
+            { icon: "Globe", label: "50+", sub: "Серверов" },
+          ].map((f) => (
+            <div key={f.label} className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded border border-neon-cyan/20 bg-neon-cyan/5 flex items-center justify-center flex-shrink-0">
+                <Icon name={f.icon} fallback="Shield" size={16} className="text-neon-cyan" />
               </div>
               <div>
-                <label className="font-mono-ibm text-xs text-white/50 tracking-widest mb-2 block">ТАРИФ</label>
-                <select className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white font-ibm focus:outline-none focus:border-neon-cyan transition-colors">
-                  <option>BASIC — 299₽/мес</option>
-                  <option>PRO — 599₽/мес</option>
-                  <option>ULTRA — 1199₽/мес</option>
-                </select>
+                <div className="font-orbitron text-sm font-bold text-white">{f.label}</div>
+                <div className="font-mono-ibm text-xs text-white/30">{f.sub}</div>
               </div>
             </div>
-
-            <div className="flex items-center gap-3 p-4 border border-neon-green/30 bg-neon-green/5 rounded">
-              <Icon name="Gift" size={18} className="text-neon-green flex-shrink-0" />
-              <span className="font-ibm text-sm text-white/70">
-                <span className="text-neon-green font-medium">7 дней бесплатно</span> — без привязки карты
-              </span>
-            </div>
-
-            <button className="w-full cyber-btn-primary py-4 text-sm rounded font-orbitron tracking-widest">
-              НАЧАТЬ ПРОБНЫЙ ПЕРИОД →
-            </button>
-
-            <div className="grid grid-cols-3 gap-4 text-center pt-2 border-t border-dark-border">
-              {[
-                { icon: "Lock", label: "AES-256" },
-                { icon: "Zap", label: "WireGuard" },
-                { icon: "EyeOff", label: "No Logs" },
-              ].map((f) => (
-                <div key={f.label} className="flex flex-col items-center gap-2 pt-2">
-                  <Icon name={f.icon} fallback="Shield" size={20} className="text-neon-cyan" />
-                  <span className="font-mono-ibm text-xs text-white/50">{f.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* ═══ PLANS ═══ */}
-      <section id="plans" className="py-24 px-4">
+      <section id="plans" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="font-mono-ibm text-neon-cyan text-xs tracking-widest mb-3">// ТАРИФНЫЕ ПЛАНЫ</div>
+          <div className="mb-14">
+            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// ТАРИФЫ</div>
             <h2 className="font-orbitron text-4xl font-bold text-white">
-              ВЫБЕРИ <span className="neon-text-cyan">УРОВЕНЬ</span>
+              ВЫБЕРИ <span className="neon-text-cyan">ПЛАН</span>
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`cyber-card rounded-lg p-6 flex flex-col transition-all duration-300 hover:-translate-y-2 relative ${
-                  plan.popular ? "border-neon-purple neon-glow-purple" : ""
+                className={`rounded-lg p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 relative border ${
+                  plan.popular
+                    ? "border-neon-cyan bg-neon-cyan/5 neon-glow-cyan"
+                    : "border-dark-border bg-dark-card hover:border-neon-cyan/30"
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-neon-purple font-orbitron text-xs text-dark-bg font-bold rounded">
+                  <div className="absolute -top-3 left-6 px-3 py-0.5 bg-neon-cyan font-orbitron text-xs text-dark-bg font-bold rounded">
                     ПОПУЛЯРНЫЙ
                   </div>
                 )}
-                <div className="mb-6">
-                  <div className={`font-mono-ibm text-xs tracking-widest mb-1 ${plan.color === "cyan" ? "text-neon-cyan" : "text-neon-purple"}`}>
-                    // ПЛАН
-                  </div>
-                  <div className="font-orbitron text-2xl font-bold text-white">{plan.name}</div>
-                </div>
+
+                <div className="font-orbitron text-sm text-white/40 mb-4">{plan.name}</div>
 
                 <div className="mb-6">
-                  <span className={`font-orbitron text-5xl font-black ${plan.color === "cyan" ? "neon-text-cyan" : "neon-text-purple"}`}>
-                    {plan.price}
-                  </span>
-                  <span className="text-white/40 text-sm ml-2">₽/{plan.period}</span>
+                  <span className="font-orbitron text-5xl font-black neon-text-cyan">{plan.price}</span>
+                  <span className="text-white/30 text-sm ml-2">₽/мес</span>
                 </div>
 
-                <ul className="space-y-3 mb-8 flex-1">
+                <ul className="space-y-2.5 mb-8 flex-1">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3 text-sm text-white/70">
-                      <Icon name="Check" size={14} className={plan.color === "cyan" ? "text-neon-cyan" : "text-neon-purple"} />
+                    <li key={f} className="flex items-center gap-2.5 text-sm text-white/60 font-ibm">
+                      <div className="w-1 h-1 rounded-full bg-neon-cyan flex-shrink-0" />
                       {f}
                     </li>
                   ))}
                 </ul>
 
-                <button className={`w-full py-3 text-sm rounded ${plan.color === "cyan" ? "cyber-btn-primary" : "cyber-btn-secondary"}`}>
+                <button
+                  onClick={() => openAuth("register")}
+                  className={`w-full py-3 text-xs rounded font-orbitron tracking-widest transition-all ${
+                    plan.popular
+                      ? "cyber-btn-primary"
+                      : "border border-dark-border text-white/50 hover:border-neon-cyan/50 hover:text-neon-cyan"
+                  }`}
+                >
                   ВЫБРАТЬ →
                 </button>
               </div>
@@ -362,54 +368,51 @@ export default function Index() {
         </div>
       </section>
 
-      {/* ═══ MAP / SERVERS ═══ */}
-      <section id="servers" className="py-24 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="font-mono-ibm text-neon-cyan text-xs tracking-widest mb-3">// ГЛОБАЛЬНАЯ СЕТЬ</div>
+      {/* ═══ MAP ═══ */}
+      <section id="servers" className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-14">
+            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// СЕТЬ</div>
             <h2 className="font-orbitron text-4xl font-bold text-white">
-              КАРТА <span className="neon-text-purple">СЕРВЕРОВ</span>
+              КАРТА <span className="neon-text-cyan">СЕРВЕРОВ</span>
             </h2>
-            <p className="text-white/40 font-ibm mt-3 text-sm">Нажми на точку, чтобы увидеть детали сервера</p>
           </div>
 
-          <div className="cyber-card rounded-lg overflow-hidden">
-            {/* Interactive Map */}
-            <div className="relative bg-dark-bg/80 overflow-hidden" style={{ paddingBottom: "48%" }}>
+          <div className="rounded-lg border border-dark-border overflow-hidden bg-dark-card">
+            <div className="relative" style={{ paddingBottom: "46%" }}>
               <div className="absolute inset-0">
-                <svg viewBox="0 0 1000 480" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 1000 460" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
                   {/* Grid */}
                   {[...Array(10)].map((_, i) => (
-                    <line key={`h${i}`} x1="0" y1={i * 48} x2="1000" y2={i * 48} stroke="rgba(0,255,255,0.04)" strokeWidth="1" />
+                    <line key={`h${i}`} x1="0" y1={i * 46} x2="1000" y2={i * 46} stroke="rgba(0,255,255,0.03)" strokeWidth="1" />
                   ))}
                   {[...Array(20)].map((_, i) => (
-                    <line key={`v${i}`} x1={i * 50} y1="0" x2={i * 50} y2="480" stroke="rgba(0,255,255,0.04)" strokeWidth="1" />
+                    <line key={`v${i}`} x1={i * 50} y1="0" x2={i * 50} y2="460" stroke="rgba(0,255,255,0.03)" strokeWidth="1" />
                   ))}
                   {/* Continents */}
-                  <g fill="rgba(0,255,255,0.08)" stroke="rgba(0,255,255,0.2)" strokeWidth="0.8">
-                    <path d="M80,80 L200,55 L240,90 L235,180 L190,230 L150,250 L100,200 L65,165 Z" />
-                    <path d="M155,265 L205,245 L235,285 L248,370 L205,430 L162,410 L140,340 L132,295 Z" />
-                    <path d="M420,55 L510,45 L545,78 L538,145 L478,162 L432,152 L400,110 Z" />
-                    <path d="M432,172 L518,162 L548,200 L558,305 L518,385 L462,395 L420,345 L400,255 L412,192 Z" />
-                    <path d="M545,45 L810,38 L848,102 L828,205 L758,225 L685,245 L622,225 L562,192 L535,132 Z" />
-                    <path d="M755,315 L848,304 L876,342 L866,405 L804,425 L742,395 L722,355 Z" />
+                  <g fill="rgba(0,255,255,0.06)" stroke="rgba(0,255,255,0.15)" strokeWidth="0.7">
+                    <path d="M80,78 L200,53 L240,88 L235,178 L190,228 L150,248 L100,198 L65,162 Z" />
+                    <path d="M155,262 L205,242 L235,282 L248,368 L205,428 L162,408 L140,338 L132,292 Z" />
+                    <path d="M420,52 L510,42 L545,75 L538,142 L478,160 L432,150 L400,108 Z" />
+                    <path d="M432,170 L518,160 L548,198 L558,302 L518,382 L462,392 L420,342 L400,252 L412,190 Z" />
+                    <path d="M545,42 L810,35 L848,98 L828,202 L758,222 L685,242 L622,222 L562,190 L535,130 Z" />
+                    <path d="M755,312 L848,302 L876,340 L866,402 L804,422 L742,392 L722,352 Z" />
                   </g>
-                  {/* Connection lines between selected server and others */}
-                  {selectedServer && SERVERS.filter(s => s.id !== selectedServer.id && s.status === "online").map(s => (
+                  {/* Lines to selected */}
+                  {selectedServer && SERVERS.filter(s => s.id !== selectedServer.id).map(s => (
                     <line
                       key={s.id}
                       x1={selectedServer.x * 10}
-                      y1={selectedServer.y * 4.8}
+                      y1={selectedServer.y * 4.6}
                       x2={s.x * 10}
-                      y2={s.y * 4.8}
-                      stroke="rgba(0,255,255,0.15)"
-                      strokeWidth="0.5"
-                      strokeDasharray="4,4"
+                      y2={s.y * 4.6}
+                      stroke="rgba(0,200,255,0.12)"
+                      strokeWidth="0.6"
+                      strokeDasharray="3,5"
                     />
                   ))}
                 </svg>
 
-                {/* Server dots */}
                 {SERVERS.map((server) => (
                   <button
                     key={server.id}
@@ -419,18 +422,18 @@ export default function Index() {
                   >
                     <div className="relative">
                       <div
-                        className="w-4 h-4 rounded-full border-2 transition-all duration-300 group-hover:scale-150"
+                        className="w-3 h-3 rounded-full border transition-all duration-300 group-hover:scale-150"
                         style={{
-                          background: server.status === "online" ? getLoadColor(server.load) : "#555",
-                          borderColor: server.status === "online" ? getLoadColor(server.load) : "#555",
-                          boxShadow: server.status === "online" ? `0 0 8px ${getLoadColor(server.load)}` : "none",
-                          animation: selectedServer?.id === server.id ? "neon-pulse 1s infinite" : server.status === "online" ? "pulse-green 2.5s infinite" : "none",
-                          transform: selectedServer?.id === server.id ? "scale(1.5)" : undefined,
+                          background: selectedServer?.id === server.id ? "#00ffff" : "rgba(0,200,255,0.4)",
+                          borderColor: "#00ffff",
+                          boxShadow: selectedServer?.id === server.id
+                            ? "0 0 12px #00ffff, 0 0 24px rgba(0,255,255,0.4)"
+                            : "0 0 6px rgba(0,200,255,0.5)",
                         }}
                       />
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-                        <div className="bg-dark-card border border-neon-cyan/40 rounded px-2 py-1 text-xs font-mono-ibm text-neon-cyan shadow-lg">
-                          {server.flag} {server.city} · {server.ping}ms
+                        <div className="bg-dark-bg border border-neon-cyan/30 rounded px-2 py-1 text-xs font-mono-ibm text-neon-cyan">
+                          {server.flag} {server.city}
                         </div>
                       </div>
                     </div>
@@ -439,170 +442,63 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Server detail panel */}
-            {selectedServer && (
-              <div className="border-t border-neon-cyan/20 p-6 bg-neon-cyan/3 animate-fade-in">
-                <div className="grid md:grid-cols-5 gap-6 items-center">
-                  <div className="md:col-span-2">
-                    <div className="font-mono-ibm text-xs text-white/40 mb-1">ВЫБРАННЫЙ СЕРВЕР</div>
-                    <div className="font-orbitron font-bold text-white text-xl">
-                      {selectedServer.flag} {selectedServer.city}
-                    </div>
-                    <div className="font-ibm text-sm text-white/50">{selectedServer.country}</div>
-                  </div>
+            {/* Selected server */}
+            {selectedServer ? (
+              <div className="border-t border-neon-cyan/20 p-5 flex items-center justify-between gap-4 bg-neon-cyan/3 animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{selectedServer.flag}</span>
                   <div>
-                    <div className="font-mono-ibm text-xs text-white/40 mb-1">ПИНГ</div>
-                    <div className="font-orbitron text-3xl font-bold neon-text-cyan">
-                      {selectedServer.ping}<span className="text-sm text-white/40 ml-1">мс</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-mono-ibm text-xs text-white/40 mb-2">ЗАГРУЗКА {selectedServer.load}%</div>
-                    <div className="w-full bg-dark-bg rounded-full h-2">
-                      <div
-                        className="h-2 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${selectedServer.load}%`,
-                          background: getLoadColor(selectedServer.load),
-                          boxShadow: `0 0 8px ${getLoadColor(selectedServer.load)}`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <button className="cyber-btn-primary px-5 py-3 text-xs rounded w-full">
-                      ПОДКЛЮЧИТЬСЯ →
-                    </button>
+                    <div className="font-orbitron text-sm font-bold text-white">{selectedServer.city}</div>
+                    <div className="font-mono-ibm text-xs text-neon-cyan/60">Сервер выбран</div>
                   </div>
                 </div>
+                <button onClick={() => openAuth("register")} className="cyber-btn-primary px-5 py-2.5 text-xs rounded">
+                  ПОДКЛЮЧИТЬСЯ →
+                </button>
+              </div>
+            ) : (
+              <div className="border-t border-dark-border p-4 flex items-center gap-2">
+                <Icon name="MapPin" size={14} className="text-neon-cyan/40" />
+                <span className="font-mono-ibm text-xs text-white/30">Нажми на точку для выбора сервера</span>
               </div>
             )}
-
-            {/* Server list */}
-            <div className="border-t border-dark-border p-6">
-              <div className="font-mono-ibm text-xs text-white/40 tracking-widest mb-4">
-                // СПИСОК СЕРВЕРОВ ({SERVERS.filter(s => s.status === "online").length} ONLINE / {SERVERS.length} ВСЕГО)
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                {SERVERS.map((server) => (
-                  <button
-                    key={server.id}
-                    className={`flex items-center gap-3 p-3 rounded border transition-all duration-200 text-left ${
-                      selectedServer?.id === server.id
-                        ? "border-neon-cyan bg-neon-cyan/5 neon-border-cyan"
-                        : "border-dark-border hover:border-neon-cyan/40 hover:bg-dark-card"
-                    }`}
-                    onClick={() => setSelectedServer(selectedServer?.id === server.id ? null : server)}
-                  >
-                    <span className="text-lg leading-none">{server.flag}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-ibm text-sm text-white truncate">{server.city}</div>
-                      <div className="font-mono-ibm text-xs text-white/40">{server.ping} мс</div>
-                    </div>
-                    <div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{
-                        background: server.status === "online" ? getLoadColor(server.load) : "#555",
-                        boxShadow: server.status === "online" ? `0 0 6px ${getLoadColor(server.load)}` : "none",
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ STATUS ═══ */}
-      <section id="status" className="py-24 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="font-mono-ibm text-neon-cyan text-xs tracking-widest mb-3">// МОНИТОРИНГ</div>
-            <h2 className="font-orbitron text-4xl font-bold text-white">
-              СТАТУС <span className="neon-text-cyan">СИСТЕМЫ</span>
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            {[
-              { name: "API Gateway", uptime: "99.98%", status: "online", latency: "8ms" },
-              { name: "VPN Core", uptime: "99.95%", status: "online", latency: "3ms" },
-              { name: "DNS Resolver", uptime: "100%", status: "online", latency: "1ms" },
-              { name: "Auth Service", uptime: "99.99%", status: "online", latency: "12ms" },
-              { name: "Billing System", uptime: "99.9%", status: "online", latency: "45ms" },
-              { name: "Sydney Cluster", uptime: "87.2%", status: "maintenance", latency: "—" },
-            ].map((service) => (
-              <div key={service.name} className="cyber-card rounded-lg p-5 flex items-center gap-4 flex-wrap">
-                <div className={`w-3 h-3 rounded-full flex-shrink-0 ${service.status === "online" ? "status-dot-online" : "bg-yellow-400"}`} />
-                <div className="flex-1 min-w-[120px]">
-                  <div className="font-orbitron text-sm font-medium text-white">{service.name}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-mono-ibm text-xs text-white/40">ЗАДЕРЖКА</div>
-                  <div className="font-mono-ibm text-sm text-neon-cyan">{service.latency}</div>
-                </div>
-                <div className="text-right min-w-[80px]">
-                  <div className="font-mono-ibm text-xs text-white/40">UPTIME</div>
-                  <div className={`font-mono-ibm text-sm font-bold ${service.status === "online" ? "status-online" : "text-yellow-400"}`}>
-                    {service.uptime}
-                  </div>
-                </div>
-                <div className={`font-orbitron text-xs px-3 py-1 rounded border ${
-                  service.status === "online"
-                    ? "border-neon-green/40 text-neon-green bg-neon-green/5"
-                    : "border-yellow-400/40 text-yellow-400 bg-yellow-400/5"
-                }`}>
-                  {service.status === "online" ? "ONLINE" : "MAINT"}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 p-4 border border-neon-cyan/20 bg-neon-cyan/5 rounded flex items-center gap-3">
-            <Icon name="Activity" size={18} className="text-neon-cyan flex-shrink-0" />
-            <span className="font-ibm text-sm text-white/70">
-              Последнее обновление: <span className="text-neon-cyan font-mono-ibm">2026-04-12 14:32:07 UTC</span>
-            </span>
           </div>
         </div>
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section id="faq" className="py-24 px-4">
+      <section id="faq" className="py-24 px-6">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="font-mono-ibm text-neon-cyan text-xs tracking-widest mb-3">// СПРАВКА</div>
-            <h2 className="font-orbitron text-4xl font-bold text-white">
-              ЧАСТО <span className="neon-text-purple">ЗАДАЮТ</span>
-            </h2>
+          <div className="mb-14">
+            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// ВОПРОСЫ</div>
+            <h2 className="font-orbitron text-4xl font-bold text-white">FAQ</h2>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {FAQ_ITEMS.map((item, i) => (
               <div
                 key={i}
-                className={`cyber-card rounded-lg overflow-hidden transition-all duration-300 ${openFaq === i ? "border-neon-cyan/50" : ""}`}
+                className={`rounded-lg border overflow-hidden transition-all duration-200 ${
+                  openFaq === i ? "border-neon-cyan/40 bg-neon-cyan/3" : "border-dark-border bg-dark-card hover:border-neon-cyan/20"
+                }`}
               >
                 <button
                   className="w-full p-5 flex items-center justify-between gap-4 text-left"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 >
-                  <div className="flex items-start gap-3">
-                    <span className="font-mono-ibm text-xs text-neon-cyan mt-0.5 flex-shrink-0">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="font-ibm font-medium text-white">{item.q}</span>
+                  <div className="flex items-center gap-4">
+                    <span className="font-mono-ibm text-xs text-neon-cyan/40 flex-shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="font-ibm text-sm text-white">{item.q}</span>
                   </div>
                   <Icon
-                    name={openFaq === i ? "ChevronUp" : "ChevronDown"}
-                    size={16}
-                    className={`flex-shrink-0 transition-colors ${openFaq === i ? "text-neon-cyan" : "text-white/30"}`}
+                    name={openFaq === i ? "Minus" : "Plus"}
+                    size={14}
+                    className={`flex-shrink-0 transition-colors ${openFaq === i ? "text-neon-cyan" : "text-white/20"}`}
                   />
                 </button>
                 {openFaq === i && (
-                  <div className="px-5 pb-5 border-t border-dark-border animate-fade-in">
-                    <p className="font-ibm text-sm text-white/60 leading-relaxed pt-4">{item.a}</p>
+                  <div className="px-5 pb-5 border-t border-neon-cyan/10 animate-fade-in">
+                    <p className="font-ibm text-sm text-white/50 leading-relaxed pt-4 pl-8">{item.a}</p>
                   </div>
                 )}
               </div>
@@ -612,74 +508,63 @@ export default function Index() {
       </section>
 
       {/* ═══ CONTACTS ═══ */}
-      <section id="contacts" className="py-24 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="font-mono-ibm text-neon-cyan text-xs tracking-widest mb-3">// СВЯЗЬ</div>
-            <h2 className="font-orbitron text-4xl font-bold text-white">КОНТАКТЫ</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
+      <section id="contacts" className="py-24 px-6 border-t border-dark-border">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-start">
+          <div>
+            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// КОНТАКТЫ</div>
+            <h2 className="font-orbitron text-4xl font-bold text-white mb-8">СВЯЗАТЬСЯ</h2>
             <div className="space-y-4">
               {[
-                { icon: "Mail", label: "Email", value: "support@neoshield.vpn", color: "cyan" },
-                { icon: "MessageCircle", label: "Telegram", value: "@neoshield_vpn", color: "purple" },
-                { icon: "Clock", label: "Поддержка", value: "24/7 без выходных", color: "cyan" },
-                { icon: "Globe", label: "Юрисдикция", value: "Нидерланды · No Logs", color: "purple" },
+                { icon: "Mail", value: "support@neoshield.vpn" },
+                { icon: "MessageCircle", value: "@neoshield_vpn" },
+                { icon: "Clock", value: "Поддержка 24/7" },
               ].map((c) => (
-                <div key={c.label} className="cyber-card rounded-lg p-4 flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded flex items-center justify-center flex-shrink-0 ${
-                    c.color === "cyan" ? "bg-neon-cyan/10 border border-neon-cyan/30" : "bg-neon-purple/10 border border-neon-purple/30"
-                  }`}>
-                    <Icon name={c.icon} fallback="Shield" size={18} className={c.color === "cyan" ? "text-neon-cyan" : "text-neon-purple"} />
+                <div key={c.value} className="flex items-center gap-4">
+                  <div className="w-9 h-9 rounded border border-neon-cyan/20 bg-neon-cyan/5 flex items-center justify-center flex-shrink-0">
+                    <Icon name={c.icon} fallback="Shield" size={14} className="text-neon-cyan" />
                   </div>
-                  <div>
-                    <div className="font-mono-ibm text-xs text-white/40">{c.label}</div>
-                    <div className="font-ibm text-sm text-white">{c.value}</div>
-                  </div>
+                  <span className="font-ibm text-sm text-white/60">{c.value}</span>
                 </div>
               ))}
             </div>
+          </div>
 
-            <div className="cyber-card rounded-lg p-6 space-y-4">
-              <div className="font-orbitron text-sm text-neon-cyan">НАПИСАТЬ НАМ</div>
-              <input
-                type="text"
-                placeholder="Ваше имя"
-                className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white font-ibm text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white font-ibm text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
-              />
-              <textarea
-                placeholder="Сообщение..."
-                rows={4}
-                className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white font-ibm text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 resize-none"
-              />
-              <button className="w-full cyber-btn-primary py-3 text-sm rounded">ОТПРАВИТЬ →</button>
-            </div>
+          <div className="space-y-4">
+            <input
+              type="text"
+              placeholder="Имя"
+              className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
+            />
+            <textarea
+              placeholder="Сообщение"
+              rows={4}
+              className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 resize-none"
+            />
+            <button className="w-full cyber-btn-primary py-3.5 text-xs rounded font-orbitron tracking-widest">
+              ОТПРАВИТЬ →
+            </button>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-dark-border py-8 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Icon name="Shield" size={16} className="text-neon-cyan" />
-            <span className="font-orbitron text-sm neon-text-cyan">
-              NEO<span className="text-neon-purple">SHIELD</span> VPN
-            </span>
+      <footer className="border-t border-dark-border py-6 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Icon name="Shield" size={14} className="text-neon-cyan" />
+            <span className="font-orbitron text-xs neon-text-cyan tracking-widest">NEOSHIELD VPN</span>
           </div>
-          <div className="font-mono-ibm text-xs text-white/30 text-center">
-            © 2026 NeoShield VPN · No Logs Policy · AES-256 Encryption
+          <div className="font-mono-ibm text-xs text-white/20">
+            © 2026 NeoShield · No Logs · AES-256
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full status-dot-online" />
-            <span className="font-mono-ibm text-xs text-neon-green">ALL SYSTEMS OPERATIONAL</span>
-          </div>
+          <button onClick={() => openAuth("login")} className="font-mono-ibm text-xs text-white/30 hover:text-neon-cyan transition-colors">
+            ВОЙТИ В КАБИНЕТ →
+          </button>
         </div>
       </footer>
     </div>
