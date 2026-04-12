@@ -1,55 +1,20 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
-const HERO_IMAGE = "https://cdn.poehali.dev/projects/c5530eba-c9a4-45d0-b3b8-b97285df77dc/files/7ce7ef9f-4712-4898-b8ee-4c3a344835df.jpg";
-
-const SERVERS = [
-  { id: 1, city: "Франкфурт", flag: "🇩🇪", x: 48.5, y: 32 },
-  { id: 2, city: "Нью-Йорк", flag: "🇺🇸", x: 22, y: 36 },
-  { id: 3, city: "Лос-Анджелес", flag: "🇺🇸", x: 12, y: 40 },
-  { id: 4, city: "Амстердам", flag: "🇳🇱", x: 47, y: 29 },
-  { id: 5, city: "Токио", flag: "🇯🇵", x: 80, y: 36 },
-  { id: 6, city: "Лондон", flag: "🇬🇧", x: 45, y: 28 },
-  { id: 7, city: "Сингапур", flag: "🇸🇬", x: 74, y: 55 },
-  { id: 8, city: "Торонто", flag: "🇨🇦", x: 19, y: 30 },
-  { id: 9, city: "Сидней", flag: "🇦🇺", x: 82, y: 72 },
-  { id: 10, city: "Цюрих", flag: "🇨🇭", x: 49.5, y: 31 },
-  { id: 11, city: "Париж", flag: "🇫🇷", x: 46.5, y: 31 },
-  { id: 12, city: "Сан-Паулу", flag: "🇧🇷", x: 30, y: 65 },
-];
-
-const PLANS = [
-  {
-    name: "BASIC",
-    price: "299",
-    features: ["5 устройств", "10 стран", "100 Мбит/с"],
-    popular: false,
-  },
-  {
-    name: "PRO",
-    price: "599",
-    features: ["Безлимит устройств", "50+ стран", "1 Гбит/с", "Выделенный IP"],
-    popular: true,
-  },
-  {
-    name: "ULTRA",
-    price: "1199",
-    features: ["Безлимит устройств", "Все страны", "10 Гбит/с", "Персональный менеджер"],
-    popular: false,
-  },
-];
+const LEADER_IMG = "https://cdn.poehali.dev/projects/c5530eba-c9a4-45d0-b3b8-b97285df77dc/bucket/772efb66-806a-4ffb-ad15-f2b69a0b5a91.jpg";
 
 const FAQ_ITEMS = [
-  { q: "Есть ли логи активности?", a: "Нет. Политика нулевого логирования — ваши данные и IP-адрес не хранятся." },
-  { q: "Какие протоколы поддерживаются?", a: "OpenVPN, WireGuard, IKEv2 и собственный протокол NeoTunnel с двойным шифрованием." },
-  { q: "Есть ли пробный период?", a: "Да, 7 дней бесплатно на любом тарифе. Только почта — карта не нужна." },
-  { q: "Сколько устройств можно подключить?", a: "BASIC — до 5 устройств. PRO и ULTRA — без ограничений." },
+  { q: "Что входит в подписку за 199₽?", a: "Безопасный VPN, обход блокировок региона, обход замедления Telegram и приглашение в Яндекс Плюс Семья. Всё в одном за 199₽/мес." },
+  { q: "Какой протокол шифрования используется?", a: "ChaCha20-Poly1305 — один из самых надёжных и быстрых алгоритмов шифрования. Особенно эффективен на мобильных устройствах." },
+  { q: "Как получить приглашение в Яндекс Семью?", a: "После оплаты подписки вы получите ссылку-приглашение в Яндекс Плюс Семья. Ссылка действует ограниченное время, открывайте сразу. Если истекла — запросите новую у поддержки." },
+  { q: "Есть ли логи активности?", a: "Нет. Мы не храним данные о ваших действиях, посещённых сайтах и IP-адресах." },
+  { q: "Как продлить подписку?", a: "Через личный кабинет в нашем Telegram-боте или напрямую через поддержку @sbsmanager_bot." },
 ];
 
 const NAV_ITEMS = [
   { id: "home", label: "ГЛАВНАЯ" },
-  { id: "plans", label: "ТАРИФЫ" },
-  { id: "servers", label: "СЕРВЕРЫ" },
+  { id: "what", label: "ЧТО ВХОДИТ" },
+  { id: "price", label: "ЦЕНА" },
   { id: "faq", label: "FAQ" },
   { id: "contacts", label: "КОНТАКТЫ" },
 ];
@@ -58,7 +23,6 @@ type AuthMode = "login" | "register";
 
 export default function Index() {
   const [activeSection, setActiveSection] = useState("home");
-  const [selectedServer, setSelectedServer] = useState<typeof SERVERS[0] | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -80,17 +44,12 @@ export default function Index() {
     <div className="min-h-screen bg-dark-bg text-white font-ibm relative overflow-x-hidden">
       {/* Grid background */}
       <div className="fixed inset-0 pointer-events-none z-0 grid-bg opacity-30" />
-      <div className="fixed inset-0 pointer-events-none z-0 bg-gradient-radial from-neon-cyan/3 via-transparent to-transparent" />
 
       {/* AUTH MODAL */}
       {authOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={(e) => e.target === e.currentTarget && setAuthOpen(false)}
-        >
-          <div className="absolute inset-0 bg-dark-bg/80 backdrop-blur-sm" onClick={() => setAuthOpen(false)} />
-          <div className="relative w-full max-w-md cyber-card rounded-lg p-8 animate-scale-in">
-            {/* Close */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-dark-bg/85 backdrop-blur-sm" onClick={() => setAuthOpen(false)} />
+          <div className="relative w-full max-w-sm cyber-card rounded-xl p-8 animate-scale-in">
             <button
               onClick={() => setAuthOpen(false)}
               className="absolute top-4 right-4 text-white/30 hover:text-neon-cyan transition-colors"
@@ -98,19 +57,19 @@ export default function Index() {
               <Icon name="X" size={18} />
             </button>
 
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-7 h-7 relative flex items-center justify-center">
-                <div className="absolute inset-0 border border-neon-cyan rotate-45 animate-neon-pulse" />
-                <Icon name="Shield" size={12} className="text-neon-cyan relative z-10" />
-              </div>
-              <span className="font-orbitron text-sm font-bold neon-text-cyan tracking-widest">
-                NEO<span className="text-white/60">SHIELD</span>
-              </span>
+            {/* Leader avatar */}
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src={LEADER_IMG}
+                alt="SBS"
+                className="w-16 h-16 rounded-full object-cover border-2 border-neon-cyan mb-3"
+                style={{ boxShadow: "0 0 16px rgba(0,255,255,0.4)" }}
+              />
+              <span className="font-orbitron text-sm font-bold neon-text-cyan tracking-widest">SBS CONNECT</span>
             </div>
 
             {/* Tabs */}
-            <div className="flex mb-8 border-b border-dark-border">
+            <div className="flex mb-6 border-b border-dark-border">
               {(["login", "register"] as AuthMode[]).map((mode) => (
                 <button
                   key={mode}
@@ -133,7 +92,7 @@ export default function Index() {
                   <input
                     type="text"
                     placeholder="Ваше имя"
-                    className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
+                    className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
                   />
                 </div>
               )}
@@ -142,7 +101,7 @@ export default function Index() {
                 <input
                   type="email"
                   placeholder="your@email.com"
-                  className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
+                  className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
                 />
               </div>
               <div>
@@ -150,7 +109,7 @@ export default function Index() {
                 <input
                   type="password"
                   placeholder="••••••••"
-                  className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
+                  className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
                 />
               </div>
 
@@ -162,13 +121,13 @@ export default function Index() {
                 </div>
               )}
 
-              <button className="w-full cyber-btn-primary py-3.5 text-xs rounded font-orbitron tracking-widest mt-2">
+              <button className="w-full cyber-btn-primary py-3.5 text-xs rounded-lg font-orbitron tracking-widest mt-2">
                 {authMode === "login" ? "ВОЙТИ →" : "СОЗДАТЬ АККАУНТ →"}
               </button>
 
               {authMode === "register" && (
-                <p className="font-mono-ibm text-xs text-white/30 text-center leading-relaxed">
-                  7 дней бесплатно · Карта не нужна
+                <p className="font-mono-ibm text-xs text-white/30 text-center">
+                  199₽/мес · VPN + Яндекс Плюс Семья
                 </p>
               )}
             </div>
@@ -178,14 +137,16 @@ export default function Index() {
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-dark-bg/90 backdrop-blur-md border-b border-dark-border">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          {/* Logo */}
           <button onClick={() => scrollTo("home")} className="flex items-center gap-3">
-            <div className="w-7 h-7 relative flex items-center justify-center">
-              <div className="absolute inset-0 border border-neon-cyan rotate-45 animate-neon-pulse" />
-              <Icon name="Shield" size={12} className="text-neon-cyan relative z-10" />
-            </div>
-            <span className="font-orbitron text-base font-bold neon-text-cyan tracking-widest">
-              NEO<span className="text-white/50">SHIELD</span>
+            <img
+              src={LEADER_IMG}
+              alt="SBS"
+              className="w-8 h-8 rounded-full object-cover border border-neon-cyan/60"
+            />
+            <span className="font-orbitron text-sm font-bold neon-text-cyan tracking-widest">
+              SBS <span className="text-white/60">CONNECT</span>
             </span>
           </button>
 
@@ -212,9 +173,9 @@ export default function Index() {
             </button>
             <button
               onClick={() => openAuth("register")}
-              className="cyber-btn-primary px-4 py-2 text-xs rounded"
+              className="cyber-btn-primary px-4 py-2 text-xs rounded-lg"
             >
-              НАЧАТЬ
+              ПОДКЛЮЧИТЬСЯ
             </button>
           </div>
 
@@ -235,11 +196,11 @@ export default function Index() {
               </button>
             ))}
             <div className="flex gap-3 pt-2 border-t border-dark-border">
-              <button onClick={() => { openAuth("login"); setMenuOpen(false); }} className="flex-1 py-2 font-orbitron text-xs text-white/50 border border-dark-border rounded hover:border-neon-cyan hover:text-neon-cyan transition-colors">
+              <button onClick={() => { openAuth("login"); setMenuOpen(false); }} className="flex-1 py-2 font-orbitron text-xs text-white/50 border border-dark-border rounded-lg hover:border-neon-cyan hover:text-neon-cyan transition-colors">
                 ВОЙТИ
               </button>
-              <button onClick={() => { openAuth("register"); setMenuOpen(false); }} className="flex-1 cyber-btn-primary py-2 text-xs rounded">
-                НАЧАТЬ
+              <button onClick={() => { openAuth("register"); setMenuOpen(false); }} className="flex-1 cyber-btn-primary py-2 text-xs rounded-lg">
+                ПОДКЛЮЧИТЬСЯ
               </button>
             </div>
           </div>
@@ -248,220 +209,236 @@ export default function Index() {
 
       {/* ═══ HERO ═══ */}
       <section id="home" className="relative min-h-screen flex items-center pt-16">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-10"
-          style={{ backgroundImage: `url(${HERO_IMAGE})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-dark-bg/60 via-transparent to-dark-bg" />
-        <div className="absolute inset-0 bg-gradient-to-r from-dark-bg via-dark-bg/40 to-dark-bg/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-dark-bg/40 via-transparent to-dark-bg" />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-20">
-          <div className="max-w-2xl space-y-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-neon-cyan/30 bg-neon-cyan/5 rounded font-mono-ibm text-xs text-neon-cyan/80">
+        <div className="relative z-10 max-w-5xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
+          {/* Text */}
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-neon-cyan/30 bg-neon-cyan/5 rounded-lg font-mono-ibm text-xs text-neon-cyan/80">
               <div className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-neon-pulse" />
-              AES-256 · ZERO LOGS · 50+ СЕРВЕРОВ
+              SBS | Secure Connection Service
             </div>
 
             <h1 className="font-orbitron font-black leading-none">
-              <span className="block text-6xl md:text-8xl neon-text-cyan animate-flicker">NEO</span>
-              <span className="block text-6xl md:text-8xl text-white">SHIELD</span>
-              <span className="block text-2xl md:text-3xl text-white/30 font-light tracking-[0.3em] mt-2">VPN</span>
+              <span className="block text-5xl md:text-7xl neon-text-cyan animate-flicker">SBS</span>
+              <span className="block text-5xl md:text-7xl text-white">CONNECT</span>
+              <span className="block text-lg md:text-xl text-white/30 font-light tracking-[0.2em] mt-3">SECURE CONNECTION SERVICE</span>
             </h1>
 
-            <p className="text-white/50 text-base leading-relaxed max-w-md font-ibm">
-              Анонимность. Скорость. Свобода.<br />
-              Защита нового поколения.
+            <p className="text-white/55 text-base leading-relaxed font-ibm">
+              Безопасный VPN · Обход блокировок · Обход замедления Telegram · Яндекс Плюс Семья
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => openAuth("register")} className="cyber-btn-primary px-8 py-4 text-xs rounded">
-                ПОПРОБОВАТЬ 7 ДНЕЙ →
+              <button onClick={() => openAuth("register")} className="cyber-btn-primary px-8 py-4 text-xs rounded-lg">
+                ПОДКЛЮЧИТЬСЯ →
               </button>
-              <button onClick={() => scrollTo("plans")} className="px-8 py-4 text-xs font-orbitron tracking-widest text-white/40 border border-dark-border rounded hover:border-neon-cyan/40 hover:text-white/70 transition-all">
-                ТАРИФЫ
+              <button onClick={() => scrollTo("what")} className="px-8 py-4 text-xs font-orbitron tracking-widest text-white/40 border border-dark-border rounded-lg hover:border-neon-cyan/40 hover:text-white/70 transition-all">
+                ЧТО ВХОДИТ
               </button>
+            </div>
+
+            {/* Price pill */}
+            <div className="inline-flex items-baseline gap-2 px-4 py-3 bg-neon-cyan/8 border border-neon-cyan/20 rounded-xl">
+              <span className="font-orbitron text-4xl font-black neon-text-cyan">199</span>
+              <span className="font-orbitron text-base text-white/40">₽/мес</span>
+              <span className="font-ibm text-sm text-white/30 ml-1">· всё включено</span>
+            </div>
+          </div>
+
+          {/* Leader character */}
+          <div className="flex items-center justify-center animate-float">
+            <div className="relative">
+              {/* Glow rings */}
+              <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle, rgba(0,255,255,0.15) 0%, transparent 70%)", transform: "scale(1.4)" }} />
+              <div className="absolute inset-0 rounded-full border border-neon-cyan/20 animate-neon-pulse" style={{ transform: "scale(1.2)" }} />
+
+              <img
+                src={LEADER_IMG}
+                alt="SBS Connect"
+                className="relative z-10 w-64 h-64 md:w-80 md:h-80 rounded-full object-cover border-2 border-neon-cyan/50"
+                style={{ boxShadow: "0 0 40px rgba(0,255,255,0.25), 0 0 80px rgba(0,255,255,0.08)" }}
+              />
+
+              {/* Floating badge */}
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 bg-dark-card border border-neon-cyan/40 rounded-full font-mono-ibm text-xs text-neon-cyan whitespace-nowrap animate-neon-pulse">
+                ChaCha20-Poly1305
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dark-bg to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-dark-bg to-transparent" />
       </section>
 
-      {/* ═══ FEATURES strip ═══ */}
-      <section className="py-16 px-6 border-y border-dark-border">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { icon: "Lock", label: "AES-256", sub: "Шифрование" },
-            { icon: "Zap", label: "WireGuard", sub: "Протокол" },
-            { icon: "EyeOff", label: "No Logs", sub: "Политика" },
-            { icon: "Globe", label: "50+", sub: "Серверов" },
-          ].map((f) => (
-            <div key={f.label} className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded border border-neon-cyan/20 bg-neon-cyan/5 flex items-center justify-center flex-shrink-0">
-                <Icon name={f.icon} fallback="Shield" size={16} className="text-neon-cyan" />
-              </div>
-              <div>
-                <div className="font-orbitron text-sm font-bold text-white">{f.label}</div>
-                <div className="font-mono-ibm text-xs text-white/30">{f.sub}</div>
+      {/* ═══ WELCOME MESSAGE (из бота) ═══ */}
+      <section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="cyber-card rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8">
+            <img
+              src={LEADER_IMG}
+              alt="SBS"
+              className="w-20 h-20 rounded-full object-cover border-2 border-neon-cyan flex-shrink-0"
+              style={{ boxShadow: "0 0 20px rgba(0,255,255,0.3)" }}
+            />
+            <div>
+              <div className="font-orbitron text-xs text-neon-cyan/60 tracking-widest mb-3">// ПРИВЕТСТВИЕ</div>
+              <p className="font-ibm text-white/80 leading-relaxed text-base mb-4">
+                <span className="text-white font-medium">Добро пожаловать 👋</span><br />
+                Это ваш центр управления сервисами:
+              </p>
+              <ul className="space-y-2 font-ibm text-white/60 text-sm">
+                {["Безопасный VPN", "Обход глушилок региона", "Обход замедления Telegram", "Яндекс Плюс Семья"].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-neon-cyan" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 font-orbitron text-sm text-white">
+                Всего <span className="neon-text-cyan text-xl font-black">199 ₽</span> в месяц
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
-      {/* ═══ PLANS ═══ */}
-      <section id="plans" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
+      {/* ═══ ЧТО ВХОДИТ ═══ */}
+      <section id="what" className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
           <div className="mb-14">
-            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// ТАРИФЫ</div>
+            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// СЕРВИСЫ</div>
             <h2 className="font-orbitron text-4xl font-bold text-white">
-              ВЫБЕРИ <span className="neon-text-cyan">ПЛАН</span>
+              ЧТО <span className="neon-text-cyan">ВХОДИТ</span>
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={`rounded-lg p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 relative border ${
-                  plan.popular
-                    ? "border-neon-cyan bg-neon-cyan/5 neon-glow-cyan"
-                    : "border-dark-border bg-dark-card hover:border-neon-cyan/30"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-6 px-3 py-0.5 bg-neon-cyan font-orbitron text-xs text-dark-bg font-bold rounded">
-                    ПОПУЛЯРНЫЙ
-                  </div>
-                )}
-
-                <div className="font-orbitron text-sm text-white/40 mb-4">{plan.name}</div>
-
-                <div className="mb-6">
-                  <span className="font-orbitron text-5xl font-black neon-text-cyan">{plan.price}</span>
-                  <span className="text-white/30 text-sm ml-2">₽/мес</span>
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              {
+                icon: "Shield",
+                title: "Безопасный VPN",
+                desc: "Шифрование ChaCha20-Poly1305. Весь трафик проходит через защищённый туннель.",
+                tag: "ChaCha20-Poly1305",
+              },
+              {
+                icon: "Globe",
+                title: "Обход блокировок",
+                desc: "Доступ к любым сайтам и сервисам независимо от региона и провайдера.",
+                tag: "Без ограничений",
+              },
+              {
+                icon: "Zap",
+                title: "Антилаг Telegram",
+                desc: "Обход замедления Telegram, стабильная скорость в мессенджере.",
+                tag: "LTE-Обход",
+              },
+              {
+                icon: "Star",
+                title: "Яндекс Плюс Семья",
+                desc: "Приглашение в Яндекс Плюс Семью — музыка, фильмы, кешбэк и многое другое.",
+                tag: "Yandex Plus",
+              },
+            ].map((item) => (
+              <div key={item.title} className="cyber-card rounded-xl p-6 flex gap-5 hover:-translate-y-1 transition-all duration-200">
+                <div className="w-11 h-11 rounded-lg border border-neon-cyan/25 bg-neon-cyan/8 flex items-center justify-center flex-shrink-0">
+                  <Icon name={item.icon} fallback="Shield" size={18} className="text-neon-cyan" />
                 </div>
-
-                <ul className="space-y-2.5 mb-8 flex-1">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-white/60 font-ibm">
-                      <div className="w-1 h-1 rounded-full bg-neon-cyan flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => openAuth("register")}
-                  className={`w-full py-3 text-xs rounded font-orbitron tracking-widest transition-all ${
-                    plan.popular
-                      ? "cyber-btn-primary"
-                      : "border border-dark-border text-white/50 hover:border-neon-cyan/50 hover:text-neon-cyan"
-                  }`}
-                >
-                  ВЫБРАТЬ →
-                </button>
+                <div className="flex-1">
+                  <div className="font-orbitron text-sm font-bold text-white mb-1">{item.title}</div>
+                  <div className="font-ibm text-sm text-white/50 leading-relaxed mb-3">{item.desc}</div>
+                  <div className="inline-block px-2 py-0.5 border border-neon-cyan/25 bg-neon-cyan/5 rounded font-mono-ibm text-xs text-neon-cyan/70">
+                    {item.tag}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ MAP ═══ */}
-      <section id="servers" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
+      {/* ═══ ЦЕНА ═══ */}
+      <section id="price" className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
           <div className="mb-14">
-            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// СЕТЬ</div>
+            <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// ПОДПИСКА</div>
             <h2 className="font-orbitron text-4xl font-bold text-white">
-              КАРТА <span className="neon-text-cyan">СЕРВЕРОВ</span>
+              ОДНА <span className="neon-text-cyan">ЦЕНА</span>
             </h2>
           </div>
 
-          <div className="rounded-lg border border-dark-border overflow-hidden bg-dark-card">
-            <div className="relative" style={{ paddingBottom: "46%" }}>
-              <div className="absolute inset-0">
-                <svg viewBox="0 0 1000 460" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                  {/* Grid */}
-                  {[...Array(10)].map((_, i) => (
-                    <line key={`h${i}`} x1="0" y1={i * 46} x2="1000" y2={i * 46} stroke="rgba(0,255,255,0.03)" strokeWidth="1" />
-                  ))}
-                  {[...Array(20)].map((_, i) => (
-                    <line key={`v${i}`} x1={i * 50} y1="0" x2={i * 50} y2="460" stroke="rgba(0,255,255,0.03)" strokeWidth="1" />
-                  ))}
-                  {/* Continents */}
-                  <g fill="rgba(0,255,255,0.06)" stroke="rgba(0,255,255,0.15)" strokeWidth="0.7">
-                    <path d="M80,78 L200,53 L240,88 L235,178 L190,228 L150,248 L100,198 L65,162 Z" />
-                    <path d="M155,262 L205,242 L235,282 L248,368 L205,428 L162,408 L140,338 L132,292 Z" />
-                    <path d="M420,52 L510,42 L545,75 L538,142 L478,160 L432,150 L400,108 Z" />
-                    <path d="M432,170 L518,160 L548,198 L558,302 L518,382 L462,392 L420,342 L400,252 L412,190 Z" />
-                    <path d="M545,42 L810,35 L848,98 L828,202 L758,222 L685,242 L622,222 L562,190 L535,130 Z" />
-                    <path d="M755,312 L848,302 L876,340 L866,402 L804,422 L742,392 L722,352 Z" />
-                  </g>
-                  {/* Lines to selected */}
-                  {selectedServer && SERVERS.filter(s => s.id !== selectedServer.id).map(s => (
-                    <line
-                      key={s.id}
-                      x1={selectedServer.x * 10}
-                      y1={selectedServer.y * 4.6}
-                      x2={s.x * 10}
-                      y2={s.y * 4.6}
-                      stroke="rgba(0,200,255,0.12)"
-                      strokeWidth="0.6"
-                      strokeDasharray="3,5"
-                    />
-                  ))}
-                </svg>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            {/* Price card */}
+            <div className="cyber-card rounded-2xl p-8 neon-glow-cyan border-neon-cyan/40">
+              <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-6">// SBS CONNECT</div>
 
-                {SERVERS.map((server) => (
-                  <button
-                    key={server.id}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group z-10"
-                    style={{ left: `${server.x}%`, top: `${server.y}%` }}
-                    onClick={() => setSelectedServer(selectedServer?.id === server.id ? null : server)}
-                  >
-                    <div className="relative">
-                      <div
-                        className="w-3 h-3 rounded-full border transition-all duration-300 group-hover:scale-150"
-                        style={{
-                          background: selectedServer?.id === server.id ? "#00ffff" : "rgba(0,200,255,0.4)",
-                          borderColor: "#00ffff",
-                          boxShadow: selectedServer?.id === server.id
-                            ? "0 0 12px #00ffff, 0 0 24px rgba(0,255,255,0.4)"
-                            : "0 0 6px rgba(0,200,255,0.5)",
-                        }}
-                      />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-                        <div className="bg-dark-bg border border-neon-cyan/30 rounded px-2 py-1 text-xs font-mono-ibm text-neon-cyan">
-                          {server.flag} {server.city}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+              <div className="flex items-baseline gap-3 mb-8">
+                <span className="font-orbitron text-7xl font-black neon-text-cyan">199</span>
+                <div>
+                  <span className="font-orbitron text-xl text-white/40">₽</span>
+                  <div className="font-mono-ibm text-xs text-white/30">в месяц</div>
+                </div>
               </div>
+
+              <ul className="space-y-4 mb-8">
+                {[
+                  "✅ Безопасный VPN",
+                  "✅ Обход блокировок региона",
+                  "✅ Антилаг Telegram (LTE)",
+                  "🌟 Яндекс Плюс Семья",
+                  "🔐 ChaCha20-Poly1305",
+                  "📵 Zero Logs",
+                ].map((f) => (
+                  <li key={f} className="font-ibm text-sm text-white/70">{f}</li>
+                ))}
+              </ul>
+
+              <button onClick={() => openAuth("register")} className="w-full cyber-btn-primary py-4 text-xs rounded-xl font-orbitron tracking-widest">
+                ПОДКЛЮЧИТЬСЯ →
+              </button>
+
+              <p className="font-mono-ibm text-xs text-white/25 text-center mt-4">
+                По вопросам сотрудничества: @sbsmanager_bot
+              </p>
             </div>
 
-            {/* Selected server */}
-            {selectedServer ? (
-              <div className="border-t border-neon-cyan/20 p-5 flex items-center justify-between gap-4 bg-neon-cyan/3 animate-fade-in">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{selectedServer.flag}</span>
-                  <div>
-                    <div className="font-orbitron text-sm font-bold text-white">{selectedServer.city}</div>
-                    <div className="font-mono-ibm text-xs text-neon-cyan/60">Сервер выбран</div>
-                  </div>
+            {/* Leader + info */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <img
+                  src={LEADER_IMG}
+                  alt="SBS"
+                  className="w-14 h-14 rounded-full object-cover border border-neon-cyan/40"
+                />
+                <div>
+                  <div className="font-orbitron text-sm font-bold text-white">SBS CONNECT</div>
+                  <div className="font-ibm text-xs text-white/40">Secure Connection Service</div>
                 </div>
-                <button onClick={() => openAuth("register")} className="cyber-btn-primary px-5 py-2.5 text-xs rounded">
-                  ПОДКЛЮЧИТЬСЯ →
-                </button>
               </div>
-            ) : (
-              <div className="border-t border-dark-border p-4 flex items-center gap-2">
-                <Icon name="MapPin" size={14} className="text-neon-cyan/40" />
-                <span className="font-mono-ibm text-xs text-white/30">Нажми на точку для выбора сервера</span>
+
+              <div className="space-y-3">
+                {[
+                  { icon: "Users", text: "Работает на всех устройствах" },
+                  { icon: "RefreshCw", text: "Автоматическое продление подписки" },
+                  { icon: "MessageCircle", text: "Поддержка через Telegram-бот 24/7" },
+                  { icon: "Gift", text: "Приглашение в Яндекс Семью включено" },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg border border-neon-cyan/20 bg-neon-cyan/5 flex items-center justify-center flex-shrink-0">
+                      <Icon name={item.icon} fallback="Shield" size={13} className="text-neon-cyan" />
+                    </div>
+                    <span className="font-ibm text-sm text-white/60">{item.text}</span>
+                  </div>
+                ))}
               </div>
-            )}
+
+              <div className="p-4 border border-neon-cyan/15 bg-neon-cyan/5 rounded-xl">
+                <div className="font-mono-ibm text-xs text-white/40 mb-1">ЛИЧНЫЙ КАБИНЕТ</div>
+                <div className="font-ibm text-sm text-white/60">
+                  После оплаты вы получите доступ к личному кабинету с управлением подпиской, реферальной программой и историей платежей.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -478,7 +455,7 @@ export default function Index() {
             {FAQ_ITEMS.map((item, i) => (
               <div
                 key={i}
-                className={`rounded-lg border overflow-hidden transition-all duration-200 ${
+                className={`rounded-xl border overflow-hidden transition-all duration-200 ${
                   openFaq === i ? "border-neon-cyan/40 bg-neon-cyan/3" : "border-dark-border bg-dark-card hover:border-neon-cyan/20"
                 }`}
               >
@@ -509,23 +486,35 @@ export default function Index() {
 
       {/* ═══ CONTACTS ═══ */}
       <section id="contacts" className="py-24 px-6 border-t border-dark-border">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-start">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-start">
           <div>
             <div className="font-mono-ibm text-xs text-neon-cyan/60 tracking-widest mb-3">// КОНТАКТЫ</div>
             <h2 className="font-orbitron text-4xl font-bold text-white mb-8">СВЯЗАТЬСЯ</h2>
-            <div className="space-y-4">
+
+            <div className="space-y-4 mb-8">
               {[
-                { icon: "Mail", value: "support@neoshield.vpn" },
-                { icon: "MessageCircle", value: "@neoshield_vpn" },
-                { icon: "Clock", value: "Поддержка 24/7" },
+                { icon: "MessageCircle", value: "@sbsmanager_bot", sub: "Telegram — основной канал" },
+                { icon: "Users", value: "Поддержка | SBS", sub: "Telegram-чат поддержки" },
+                { icon: "Clock", value: "24/7", sub: "Работаем без выходных" },
               ].map((c) => (
                 <div key={c.value} className="flex items-center gap-4">
-                  <div className="w-9 h-9 rounded border border-neon-cyan/20 bg-neon-cyan/5 flex items-center justify-center flex-shrink-0">
-                    <Icon name={c.icon} fallback="Shield" size={14} className="text-neon-cyan" />
+                  <div className="w-10 h-10 rounded-lg border border-neon-cyan/20 bg-neon-cyan/5 flex items-center justify-center flex-shrink-0">
+                    <Icon name={c.icon} fallback="Shield" size={15} className="text-neon-cyan" />
                   </div>
-                  <span className="font-ibm text-sm text-white/60">{c.value}</span>
+                  <div>
+                    <div className="font-ibm text-sm text-white">{c.value}</div>
+                    <div className="font-mono-ibm text-xs text-white/30">{c.sub}</div>
+                  </div>
                 </div>
               ))}
+            </div>
+
+            <div className="flex items-center gap-4 p-5 cyber-card rounded-xl">
+              <img src={LEADER_IMG} alt="SBS" className="w-12 h-12 rounded-full object-cover border border-neon-cyan/40 flex-shrink-0" />
+              <div>
+                <div className="font-orbitron text-xs text-neon-cyan mb-1">SBS CONNECT BOT</div>
+                <div className="font-ibm text-xs text-white/40">Управление подпиской через Telegram-бота</div>
+              </div>
             </div>
           </div>
 
@@ -533,19 +522,19 @@ export default function Index() {
             <input
               type="text"
               placeholder="Имя"
-              className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
+              className="w-full bg-dark-bg border border-dark-border rounded-xl px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
             />
             <input
               type="email"
               placeholder="Email"
-              className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
+              className="w-full bg-dark-bg border border-dark-border rounded-xl px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20"
             />
             <textarea
               placeholder="Сообщение"
               rows={4}
-              className="w-full bg-dark-bg border border-dark-border rounded px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 resize-none"
+              className="w-full bg-dark-bg border border-dark-border rounded-xl px-4 py-3 text-white text-sm font-ibm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 resize-none"
             />
-            <button className="w-full cyber-btn-primary py-3.5 text-xs rounded font-orbitron tracking-widest">
+            <button className="w-full cyber-btn-primary py-3.5 text-xs rounded-xl font-orbitron tracking-widest">
               ОТПРАВИТЬ →
             </button>
           </div>
@@ -554,13 +543,13 @@ export default function Index() {
 
       {/* FOOTER */}
       <footer className="border-t border-dark-border py-6 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <Icon name="Shield" size={14} className="text-neon-cyan" />
-            <span className="font-orbitron text-xs neon-text-cyan tracking-widest">NEOSHIELD VPN</span>
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <img src={LEADER_IMG} alt="SBS" className="w-6 h-6 rounded-full object-cover border border-neon-cyan/40" />
+            <span className="font-orbitron text-xs neon-text-cyan tracking-widest">SBS CONNECT</span>
           </div>
           <div className="font-mono-ibm text-xs text-white/20">
-            © 2026 NeoShield · No Logs · AES-256
+            © 2026 SBS | Secure Connection Service · 199₽/мес · ChaCha20-Poly1305
           </div>
           <button onClick={() => openAuth("login")} className="font-mono-ibm text-xs text-white/30 hover:text-neon-cyan transition-colors">
             ВОЙТИ В КАБИНЕТ →
