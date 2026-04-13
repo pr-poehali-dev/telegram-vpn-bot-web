@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
 const LEADER_IMG = "https://cdn.poehali.dev/projects/c5530eba-c9a4-45d0-b3b8-b97285df77dc/bucket/772efb66-806a-4ffb-ad15-f2b69a0b5a91.jpg";
@@ -20,13 +21,57 @@ const NAV_ITEMS = [
 ];
 
 type AuthMode = "login" | "register";
+type AuthMethod = "choose" | "telegram" | "email";
+type TgStep = "instruction" | "code";
+
+const TG_CODE_TTL = 300;
+
+function TgCodeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const digits = value.padEnd(6, "").split("").slice(0, 6);
+  return (
+    <div className="flex gap-2 justify-center">
+      {digits.map((d, i) => (
+        <div
+          key={i}
+          className={`w-10 h-12 rounded-lg border flex items-center justify-center font-orbitron text-xl font-bold transition-all ${
+            d ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-dark-border bg-dark-bg text-white/10"
+          }`}
+        >
+          {d || "·"}
+        </div>
+      ))}
+      <input
+        type="text"
+        inputMode="numeric"
+        maxLength={6}
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
+        className="absolute opacity-0 w-0 h-0"
+        autoFocus
+      />
+    </div>
+  );
+}
 
 export default function Index() {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("home");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [authMethod, setAuthMethod] = useState<AuthMethod>("choose");
+  const [tgStep, setTgStep] = useState<TgStep>("instruction");
+  const [tgCode, setTgCode] = useState("");
+  const [tgTimer, setTgTimer] = useState(TG_CODE_TTL);
+  const [tgError, setTgError] = useState(false);
+
+  useEffect(() => {
+    if (authMethod !== "telegram" || tgStep !== "code") return;
+    if (tgTimer <= 0) return;
+    const t = setInterval(() => setTgTimer((v) => v - 1), 1000);
+    return () => clearInterval(t);
+  }, [authMethod, tgStep, tgTimer]);
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -37,8 +82,32 @@ export default function Index() {
 
   const openAuth = (mode: AuthMode) => {
     setAuthMode(mode);
+    setAuthMethod("choose");
+    setTgStep("instruction");
+    setTgCode("");
+    setTgTimer(TG_CODE_TTL);
+    setTgError(false);
     setAuthOpen(true);
   };
+
+  const closeAuth = () => {
+    setAuthOpen(false);
+    setAuthMethod("choose");
+    setTgStep("instruction");
+    setTgCode("");
+  };
+
+  const handleTgCodeSubmit = () => {
+    if (tgCode === "123456") {
+      navigate("/dashboard");
+      closeAuth();
+    } else {
+      setTgError(true);
+      setTimeout(() => setTgError(false), 1500);
+    }
+  };
+
+  const formatTimer = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
     <div className="min-h-screen bg-dark-bg text-white font-ibm relative overflow-x-hidden">
@@ -48,16 +117,23 @@ export default function Index() {
       {/* AUTH MODAL */}
       {authOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-dark-bg/85 backdrop-blur-sm" onClick={() => setAuthOpen(false)} />
+          <div className="absolute inset-0 bg-dark-bg/85 backdrop-blur-sm" onClick={closeAuth} />
           <div className="relative w-full max-w-sm cyber-card rounded-xl p-8 animate-scale-in">
-            <button
-              onClick={() => setAuthOpen(false)}
-              className="absolute top-4 right-4 text-white/30 hover:text-neon-cyan transition-colors"
-            >
+            <button onClick={closeAuth} className="absolute top-4 right-4 text-white/30 hover:text-neon-cyan transition-colors">
               <Icon name="X" size={18} />
             </button>
 
-            {/* Leader avatar */}
+            {/* Back button */}
+            {authMethod !== "choose" && (
+              <button
+                onClick={() => { setAuthMethod("choose"); setTgStep("instruction"); setTgCode(""); }}
+                className="absolute top-4 left-4 text-white/30 hover:text-neon-cyan transition-colors flex items-center gap-1 font-mono-ibm text-xs"
+              >
+                <Icon name="ChevronLeft" size={14} />
+              </button>
+            )}
+
+            {/* Header */}
             <div className="flex flex-col items-center mb-6">
               <img
                 src={LEADER_IMG}
@@ -68,69 +144,206 @@ export default function Index() {
               <span className="font-orbitron text-sm font-bold neon-text-cyan tracking-widest">SBS CONNECT</span>
             </div>
 
-            {/* Tabs */}
-            <div className="flex mb-6 border-b border-dark-border">
-              {(["login", "register"] as AuthMode[]).map((mode) => (
+            {/* ── STEP: CHOOSE METHOD ── */}
+            {authMethod === "choose" && (
+              <div className="space-y-3">
+                <div className="flex mb-5 border-b border-dark-border">
+                  {(["login", "register"] as AuthMode[]).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setAuthMode(mode)}
+                      className={`flex-1 pb-3 font-orbitron text-xs tracking-widest transition-all duration-200 ${
+                        authMode === mode ? "text-neon-cyan border-b-2 border-neon-cyan -mb-px" : "text-white/30 hover:text-white/60"
+                      }`}
+                    >
+                      {mode === "login" ? "ВХОД" : "РЕГИСТРАЦИЯ"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* TG button */}
                 <button
-                  key={mode}
-                  onClick={() => setAuthMode(mode)}
-                  className={`flex-1 pb-3 font-orbitron text-xs tracking-widest transition-all duration-200 ${
-                    authMode === mode
-                      ? "text-neon-cyan border-b-2 border-neon-cyan -mb-px"
-                      : "text-white/30 hover:text-white/60"
+                  onClick={() => setAuthMethod("telegram")}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 hover:border-neon-cyan/60 hover:bg-neon-cyan/10 transition-all group"
+                >
+                  <div className="w-8 h-8 rounded-lg border border-neon-cyan/30 bg-neon-cyan/10 flex items-center justify-center flex-shrink-0">
+                    <Icon name="Send" size={14} className="text-neon-cyan" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-orbitron text-xs text-white tracking-widest">ЧЕРЕЗ TELEGRAM</div>
+                    <div className="font-mono-ibm text-xs text-white/30 mt-0.5">Полный доступ — VPN, Семья, Рефералы</div>
+                  </div>
+                  <Icon name="ChevronRight" size={14} className="text-white/20 group-hover:text-neon-cyan transition-colors" />
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 py-1">
+                  <div className="flex-1 h-px bg-dark-border" />
+                  <span className="font-mono-ibm text-xs text-white/20">или</span>
+                  <div className="flex-1 h-px bg-dark-border" />
+                </div>
+
+                {/* Email button */}
+                <button
+                  onClick={() => setAuthMethod("email")}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-dark-border bg-dark-bg hover:border-white/20 transition-all group"
+                >
+                  <div className="w-8 h-8 rounded-lg border border-dark-border bg-dark-card flex items-center justify-center flex-shrink-0">
+                    <Icon name="Mail" size={14} className="text-white/40" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="font-orbitron text-xs text-white/60 tracking-widest">ЧЕРЕЗ EMAIL</div>
+                    <div className="font-mono-ibm text-xs text-white/20 mt-0.5">Базовый доступ — без TG-функций</div>
+                  </div>
+                  <Icon name="ChevronRight" size={14} className="text-white/20 group-hover:text-white/40 transition-colors" />
+                </button>
+              </div>
+            )}
+
+            {/* ── STEP: TELEGRAM — INSTRUCTION ── */}
+            {authMethod === "telegram" && tgStep === "instruction" && (
+              <div className="space-y-5">
+                <div className="text-center mb-2">
+                  <div className="font-orbitron text-xs text-neon-cyan tracking-widest mb-1">ВХОД ЧЕРЕЗ TELEGRAM</div>
+                  <div className="font-ibm text-xs text-white/40">Одноразовый код для подтверждения</div>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    { num: "1", text: "Открой бот", sub: "@sbsmanager_bot" },
+                    { num: "2", text: "Отправь команду", sub: "/start" },
+                    { num: "3", text: "Получи 6-значный код", sub: "Бот пришлёт его в ответ" },
+                  ].map((step) => (
+                    <div key={step.num} className="flex items-center gap-3 p-3 rounded-xl border border-dark-border bg-dark-bg/50">
+                      <div className="w-6 h-6 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 flex items-center justify-center flex-shrink-0 font-orbitron text-xs text-neon-cyan">
+                        {step.num}
+                      </div>
+                      <div>
+                        <div className="font-ibm text-sm text-white">{step.text}</div>
+                        <div className="font-mono-ibm text-xs text-neon-cyan/60">{step.sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <a
+                  href="https://t.me/sbsmanager_bot?start=login"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full cyber-btn-primary py-3.5 text-xs rounded-xl font-orbitron tracking-widest"
+                >
+                  <Icon name="Send" size={13} />
+                  ОТКРЫТЬ @SBSMANAGER_BOT
+                </a>
+
+                <button
+                  onClick={() => { setTgStep("code"); setTgTimer(TG_CODE_TTL); }}
+                  className="w-full py-3 text-xs font-orbitron tracking-widest text-white/40 border border-dark-border rounded-xl hover:border-neon-cyan/30 hover:text-white/70 transition-all"
+                >
+                  УЖЕ ПОЛУЧИЛ КОД →
+                </button>
+              </div>
+            )}
+
+            {/* ── STEP: TELEGRAM — CODE INPUT ── */}
+            {authMethod === "telegram" && tgStep === "code" && (
+              <div className="space-y-5">
+                <div className="text-center">
+                  <div className="font-orbitron text-xs text-neon-cyan tracking-widest mb-1">ВВЕДИ КОД ИЗ TELEGRAM</div>
+                  <div className="font-ibm text-xs text-white/40">Бот @sbsmanager_bot прислал 6-значный код</div>
+                </div>
+
+                <div
+                  className={`relative cursor-text transition-all ${tgError ? "animate-pulse" : ""}`}
+                  onClick={() => (document.querySelector("input[type='text']") as HTMLElement)?.focus()}
+                >
+                  <TgCodeInput value={tgCode} onChange={setTgCode} />
+                  {tgError && (
+                    <div className="text-center mt-3 font-mono-ibm text-xs text-red-400">
+                      Неверный код. Попробуй ещё раз.
+                    </div>
+                  )}
+                </div>
+
+                {/* Timer */}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono-ibm text-xs text-white/30">
+                    {tgTimer > 0 ? `Код действует ${formatTimer(tgTimer)}` : "Код истёк"}
+                  </span>
+                  {tgTimer <= 0 && (
+                    <button
+                      onClick={() => { setTgStep("instruction"); setTgCode(""); setTgTimer(TG_CODE_TTL); }}
+                      className="font-mono-ibm text-xs text-neon-cyan hover:underline"
+                    >
+                      Получить новый
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleTgCodeSubmit}
+                  disabled={tgCode.length < 6}
+                  className={`w-full py-3.5 text-xs rounded-xl font-orbitron tracking-widest transition-all ${
+                    tgCode.length === 6
+                      ? "cyber-btn-primary"
+                      : "border border-dark-border text-white/20 cursor-not-allowed"
                   }`}
                 >
-                  {mode === "login" ? "ВХОД" : "РЕГИСТРАЦИЯ"}
+                  ПОДТВЕРДИТЬ →
                 </button>
-              ))}
-            </div>
 
-            <div className="space-y-4">
-              {authMode === "register" && (
-                <div>
-                  <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">ИМЯ</label>
-                  <input
-                    type="text"
-                    placeholder="Ваше имя"
-                    className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">EMAIL</label>
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
-                />
-              </div>
-              <div>
-                <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">ПАРОЛЬ</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm"
-                />
-              </div>
-
-              {authMode === "login" && (
-                <div className="text-right">
-                  <button className="font-mono-ibm text-xs text-white/30 hover:text-neon-cyan transition-colors">
-                    Забыли пароль?
-                  </button>
-                </div>
-              )}
-
-              <button className="w-full cyber-btn-primary py-3.5 text-xs rounded-lg font-orbitron tracking-widest mt-2">
-                {authMode === "login" ? "ВОЙТИ →" : "СОЗДАТЬ АККАУНТ →"}
-              </button>
-
-              {authMode === "register" && (
-                <p className="font-mono-ibm text-xs text-white/30 text-center">
-                  199₽/мес · VPN + Яндекс Плюс Семья
+                <p className="font-mono-ibm text-xs text-white/20 text-center">
+                  Демо: введи 123456 для входа
                 </p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* ── STEP: EMAIL ── */}
+            {authMethod === "email" && (
+              <div className="space-y-4">
+                <div className="text-center mb-2">
+                  <div className="font-orbitron text-xs text-white/60 tracking-widest mb-1">
+                    {authMode === "login" ? "ВХОД ПО EMAIL" : "РЕГИСТРАЦИЯ"}
+                  </div>
+                </div>
+
+                {/* Email-only limited notice */}
+                <div className="flex items-start gap-2 p-3 rounded-lg border border-neon-purple/20 bg-neon-purple/5">
+                  <Icon name="Info" size={13} className="text-neon-purple flex-shrink-0 mt-0.5" />
+                  <span className="font-mono-ibm text-xs text-white/40">
+                    Email-аккаунт не даёт VPN-конфиг. Привяжи Telegram позже в кабинете.
+                  </span>
+                </div>
+
+                {authMode === "register" && (
+                  <div>
+                    <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">ИМЯ</label>
+                    <input type="text" placeholder="Ваше имя" className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm" />
+                  </div>
+                )}
+                <div>
+                  <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">EMAIL</label>
+                  <input type="email" placeholder="your@email.com" className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm" />
+                </div>
+                <div>
+                  <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">ПАРОЛЬ</label>
+                  <input type="password" placeholder="••••••••" className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-white/20 font-ibm" />
+                </div>
+
+                {authMode === "login" && (
+                  <div className="text-right">
+                    <button className="font-mono-ibm text-xs text-white/30 hover:text-neon-cyan transition-colors">Забыли пароль?</button>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="w-full cyber-btn-primary py-3.5 text-xs rounded-lg font-orbitron tracking-widest mt-2"
+                >
+                  {authMode === "login" ? "ВОЙТИ →" : "СОЗДАТЬ АККАУНТ →"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
