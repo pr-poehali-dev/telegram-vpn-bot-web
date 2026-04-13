@@ -307,14 +307,6 @@ export default function Index() {
                   </div>
                 </div>
 
-                {/* Email-only limited notice */}
-                <div className="flex items-start gap-2 p-3 rounded-lg border border-neon-purple/20 bg-neon-purple/5">
-                  <Icon name="Info" size={13} className="text-neon-purple flex-shrink-0 mt-0.5" />
-                  <span className="font-mono-ibm text-xs text-white/40">
-                    Email-аккаунт не даёт VPN-конфиг. Привяжи Telegram позже в кабинете.
-                  </span>
-                </div>
-
                 {authMode === "register" && (
                   <div>
                     <label className="font-mono-ibm text-xs text-white/40 tracking-widest mb-1.5 block">ИМЯ</label>

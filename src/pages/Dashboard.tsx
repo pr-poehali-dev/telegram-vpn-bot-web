@@ -5,11 +5,9 @@ import Icon from "@/components/ui/icon";
 const LEADER_IMG =
   "https://cdn.poehali.dev/projects/c5530eba-c9a4-45d0-b3b8-b97285df77dc/bucket/772efb66-806a-4ffb-ad15-f2b69a0b5a91.jpg";
 
-// ─── MOCK DATA ────────────────────────────────────────────────
-type AccountType = "telegram" | "email";
-
+// ─── MOCK DATA ─────────────────────────────────────────────────
 const MOCK_TG_USER = {
-  accountType: "telegram" as AccountType,
+  accountType: "telegram" as const,
   name: "Алексей Ш.",
   username: "@alexsh_user",
   tgId: "412839201",
@@ -29,22 +27,32 @@ const MOCK_TG_USER = {
   ],
   referrals: { count: 3, bonus: "597 ₽", link: "https://t.me/sbsmanager_bot?start=ref_412839201" },
   yandexFamily: { status: "active", slots: 5, used: 3, inviteLink: "https://ya.ru/family/invite/xxxxx" },
-  vpnConfig: "active",
 };
 
 const MOCK_EMAIL_USER = {
-  accountType: "email" as AccountType,
-  name: "Пользователь",
-  email: "user@example.com",
+  accountType: "email" as const,
+  name: "Мария К.",
+  email: "maria@example.com",
   avatar: null,
-  subscription: { status: "none" as "active" | "expired" | "none" },
-  payments: [],
+  subscription: {
+    status: "active" as "active" | "expired" | "none",
+    plan: "SBS CONNECT",
+    startedAt: "2026-04-01",
+    expiresAt: "2026-05-01",
+    daysTotal: 30,
+    daysLeft: 18,
+  },
+  payments: [
+    { date: "01.04.2026", amount: "199 ₽", status: "paid", id: "#1101" },
+  ],
+  referrals: { count: 1, bonus: "199 ₽", link: "https://sbsconnect.ru?ref=maria_k" },
+  yandexFamily: { status: "active", slots: 5, used: 2, inviteLink: "https://ya.ru/family/invite/yyyyy" },
 };
 
-// ─── TYPES ────────────────────────────────────────────────────
-type MockUser = typeof MOCK_TG_USER | typeof MOCK_EMAIL_USER;
+type AnyUser = typeof MOCK_TG_USER | typeof MOCK_EMAIL_USER;
+type DemoMode = "telegram" | "email";
 
-// ─── HELPERS ─────────────────────────────────────────────────
+// ─── STATUS BADGE ──────────────────────────────────────────────
 function StatusBadge({ status }: { status: "active" | "expired" | "none" }) {
   if (status === "active")
     return (
@@ -68,21 +76,19 @@ function StatusBadge({ status }: { status: "active" | "expired" | "none" }) {
   );
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────
+// ─── MAIN ──────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [demoMode, setDemoMode] = useState<"telegram" | "email">("telegram");
+  const [demoMode, setDemoMode] = useState<DemoMode>("telegram");
   const [configCopied, setConfigCopied] = useState(false);
   const [refCopied, setRefCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "payments" | "referrals" | "family">("overview");
 
-  const user: MockUser = demoMode === "telegram" ? MOCK_TG_USER : MOCK_EMAIL_USER;
+  const user: AnyUser = demoMode === "telegram" ? MOCK_TG_USER : MOCK_EMAIL_USER;
   const isTg = user.accountType === "telegram";
-  const tgUser = isTg ? (user as typeof MOCK_TG_USER) : null;
-  const subStatus = user.subscription.status;
-  const hasActiveSub = subStatus === "active";
-  const canGetConfig = isTg && hasActiveSub;
+  const sub = user.subscription;
+  const hasActiveSub = sub.status === "active";
 
   const copyText = (text: string, setter: (v: boolean) => void) => {
     navigator.clipboard.writeText(text);
@@ -90,11 +96,18 @@ export default function Dashboard() {
     setTimeout(() => setter(false), 2000);
   };
 
+  const tabs = [
+    { id: "overview" as const, label: "ОБЗОР", icon: "LayoutDashboard" },
+    { id: "payments" as const, label: "ПЛАТЕЖИ", icon: "CreditCard" },
+    { id: "referrals" as const, label: "РЕФЕРАЛЫ", icon: "Users" },
+    { id: "family" as const, label: "ЯНД. СЕМЬЯ", icon: "Star" },
+  ];
+
   return (
     <div className="min-h-screen bg-dark-bg text-white font-ibm relative overflow-x-hidden">
       <div className="fixed inset-0 pointer-events-none z-0 grid-bg opacity-20" />
 
-      {/* ── NAV ──────────────────────────────────────────────── */}
+      {/* ── NAV ─────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-dark-bg/90 backdrop-blur-md border-b border-dark-border">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center gap-3">
@@ -107,19 +120,17 @@ export default function Dashboard() {
           {/* Demo switcher */}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-dark-card border border-dark-border rounded-xl">
             <span className="font-mono-ibm text-xs text-white/30">DEMO:</span>
-            <button
-              onClick={() => setDemoMode("telegram")}
-              className={`font-mono-ibm text-xs px-2 py-0.5 rounded transition-all ${demoMode === "telegram" ? "text-neon-cyan bg-neon-cyan/10" : "text-white/30 hover:text-white/60"}`}
-            >
-              TG
-            </button>
-            <span className="text-white/20">|</span>
-            <button
-              onClick={() => setDemoMode("email")}
-              className={`font-mono-ibm text-xs px-2 py-0.5 rounded transition-all ${demoMode === "email" ? "text-neon-cyan bg-neon-cyan/10" : "text-white/30 hover:text-white/60"}`}
-            >
-              EMAIL
-            </button>
+            {(["telegram", "email"] as DemoMode[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => { setDemoMode(m); setActiveTab("overview"); }}
+                className={`font-mono-ibm text-xs px-2 py-0.5 rounded transition-all ${
+                  demoMode === m ? "text-neon-cyan bg-neon-cyan/10" : "text-white/30 hover:text-white/60"
+                }`}
+              >
+                {m === "telegram" ? "TG" : "EMAIL"}
+              </button>
+            ))}
           </div>
 
           <button
@@ -134,93 +145,59 @@ export default function Dashboard() {
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 pt-24 pb-20">
 
-        {/* ── TG BANNER (email only) ────────────────────────── */}
-        {!isTg && (
-          <div className="mb-6 flex items-center gap-4 px-5 py-4 rounded-xl border border-neon-purple/30 bg-neon-purple/5 animate-fade-in-up">
-            <div className="w-9 h-9 rounded-lg border border-neon-purple/30 bg-neon-purple/10 flex items-center justify-center flex-shrink-0">
-              <Icon name="AlertCircle" size={16} className="text-neon-purple" />
-            </div>
-            <div className="flex-1">
-              <div className="font-orbitron text-xs text-neon-purple tracking-widest mb-0.5">ОГРАНИЧЕННЫЙ ДОСТУП</div>
-              <div className="font-ibm text-xs text-white/50">
-                Привяжи Telegram для получения VPN-конфига, Яндекс Семьи и реферальной программы
-              </div>
-            </div>
-            <button className="flex-shrink-0 px-4 py-2 cyber-btn-secondary text-xs rounded-lg font-orbitron tracking-widest">
-              ПРИВЯЗАТЬ TG
-            </button>
-          </div>
-        )}
-
-        {/* ── PROFILE CARD ─────────────────────────────────── */}
+        {/* ── PROFILE CARD ──────────────────────────────────── */}
         <div className="cyber-card rounded-2xl p-6 mb-6 animate-fade-in-up">
           <div className="flex items-center gap-5">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              {isTg && tgUser?.avatar ? (
+              {isTg ? (
                 <img
-                  src={tgUser.avatar}
+                  src={MOCK_TG_USER.avatar}
                   alt="avatar"
                   className="w-16 h-16 rounded-full object-cover border-2 border-neon-cyan/50"
                   style={{ boxShadow: "0 0 20px rgba(0,255,255,0.2)" }}
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full border-2 border-dark-border bg-dark-card flex items-center justify-center">
-                  <Icon name="User" size={24} className="text-white/30" />
+                <div
+                  className="w-16 h-16 rounded-full border-2 border-neon-cyan/30 bg-dark-card flex items-center justify-center font-orbitron text-xl font-bold neon-text-cyan"
+                  style={{ boxShadow: "0 0 16px rgba(0,255,255,0.15)" }}
+                >
+                  {user.name.charAt(0)}
                 </div>
               )}
-              <div
-                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-dark-bg ${isTg ? "bg-neon-green" : "bg-white/20"}`}
-              />
+              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-dark-bg bg-neon-green status-dot-online" />
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap mb-1">
-                <span className="font-orbitron text-base font-bold text-white">
-                  {isTg ? tgUser!.name : (user as typeof MOCK_EMAIL_USER).name}
-                </span>
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border font-mono-ibm text-xs ${
-                    isTg
-                      ? "border-neon-cyan/30 bg-neon-cyan/5 text-neon-cyan/70"
-                      : "border-white/10 bg-white/5 text-white/30"
-                  }`}
-                >
+                <span className="font-orbitron text-base font-bold text-white">{user.name}</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-neon-cyan/30 bg-neon-cyan/5 font-mono-ibm text-xs text-neon-cyan/70">
                   <Icon name={isTg ? "Send" : "Mail"} size={10} />
                   {isTg ? "Telegram" : "Email"}
                 </span>
               </div>
               {isTg ? (
                 <div className="flex items-center gap-4 flex-wrap">
-                  <span className="font-mono-ibm text-xs text-white/40">{tgUser!.username}</span>
-                  <span className="font-mono-ibm text-xs text-white/20">ID: {tgUser!.tgId}</span>
+                  <span className="font-mono-ibm text-xs text-white/40">{MOCK_TG_USER.username}</span>
+                  <span className="font-mono-ibm text-xs text-white/20">ID: {MOCK_TG_USER.tgId}</span>
                 </div>
               ) : (
-                <span className="font-mono-ibm text-xs text-white/40">
-                  {(user as typeof MOCK_EMAIL_USER).email}
-                </span>
+                <span className="font-mono-ibm text-xs text-white/40">{MOCK_EMAIL_USER.email}</span>
               )}
             </div>
 
-            <StatusBadge status={subStatus} />
+            <StatusBadge status={sub.status} />
           </div>
         </div>
 
-        {/* ── TABS ─────────────────────────────────────────── */}
-        <div className="flex gap-1 mb-6 border-b border-dark-border">
-          {(
-            [
-              { id: "overview", label: "ОБЗОР", icon: "LayoutDashboard" },
-              { id: "payments", label: "ПЛАТЕЖИ", icon: "CreditCard" },
-              ...(isTg ? [{ id: "referrals", label: "РЕФЕРАЛЫ", icon: "Users" }] : []),
-              ...(isTg ? [{ id: "family", label: "ЯНД. СЕМЬЯ", icon: "Star" }] : []),
-            ] as { id: typeof activeTab; label: string; icon: string }[]
-          ).map((tab) => (
+        {/* ── TABS ──────────────────────────────────────────── */}
+        <div className="flex gap-1 mb-6 border-b border-dark-border overflow-x-auto">
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-3 font-orbitron text-xs tracking-widest transition-all duration-200 border-b-2 -mb-px ${
+              className={`flex items-center gap-1.5 px-4 py-3 font-orbitron text-xs tracking-widest transition-all duration-200 border-b-2 -mb-px whitespace-nowrap ${
                 activeTab === tab.id
                   ? "text-neon-cyan border-neon-cyan"
                   : "text-white/30 border-transparent hover:text-white/60"
@@ -232,56 +209,50 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* ══ TAB: OVERVIEW ════════════════════════════════ */}
+        {/* ══ TAB: OVERVIEW ═════════════════════════════════ */}
         {activeTab === "overview" && (
           <div className="space-y-4 animate-fade-in-up">
 
-            {/* Subscription card */}
+            {/* Subscription */}
             <div className="cyber-card rounded-2xl p-6">
               <div className="flex items-start justify-between mb-5">
                 <div>
                   <div className="font-mono-ibm text-xs text-neon-cyan/50 tracking-widest mb-1">// ПОДПИСКА</div>
                   <div className="font-orbitron text-lg font-bold text-white">
-                    {hasActiveSub ? "SBS CONNECT" : subStatus === "expired" ? "Подписка истекла" : "Нет подписки"}
+                    {hasActiveSub ? "SBS CONNECT" : sub.status === "expired" ? "Подписка истекла" : "Нет подписки"}
                   </div>
                 </div>
-                <StatusBadge status={subStatus} />
+                <StatusBadge status={sub.status} />
               </div>
 
-              {hasActiveSub && tgUser && (
+              {hasActiveSub && "startedAt" in sub && (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5">
-                    <div className="p-3 rounded-xl border border-dark-border bg-dark-bg/50">
-                      <div className="font-mono-ibm text-xs text-white/30 mb-1">НАЧАЛО</div>
-                      <div className="font-orbitron text-sm text-white">{tgUser.subscription.startedAt}</div>
-                    </div>
-                    <div className="p-3 rounded-xl border border-dark-border bg-dark-bg/50">
-                      <div className="font-mono-ibm text-xs text-white/30 mb-1">ИСТЕКАЕТ</div>
-                      <div className="font-orbitron text-sm text-neon-cyan">{tgUser.subscription.expiresAt}</div>
-                    </div>
-                    <div className="p-3 rounded-xl border border-dark-border bg-dark-bg/50">
-                      <div className="font-mono-ibm text-xs text-white/30 mb-1">ОСТАЛОСЬ</div>
-                      <div className="font-orbitron text-sm text-white">
-                        {tgUser.subscription.daysLeft}{" "}
-                        <span className="text-white/30 text-xs">дней</span>
+                  <div className="grid grid-cols-3 gap-4 mb-5">
+                    {[
+                      { label: "НАЧАЛО", value: sub.startedAt, highlight: false },
+                      { label: "ИСТЕКАЕТ", value: sub.expiresAt, highlight: true },
+                      { label: "ОСТАЛОСЬ", value: `${sub.daysLeft} дн.`, highlight: false },
+                    ].map((s) => (
+                      <div key={s.label} className="p-3 rounded-xl border border-dark-border bg-dark-bg/50">
+                        <div className="font-mono-ibm text-xs text-white/30 mb-1">{s.label}</div>
+                        <div className={`font-orbitron text-sm ${s.highlight ? "neon-text-cyan" : "text-white"}`}>
+                          {s.value}
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
 
-                  {/* Progress bar */}
                   <div className="mb-5">
                     <div className="flex justify-between font-mono-ibm text-xs text-white/30 mb-2">
                       <span>Прогресс периода</span>
-                      <span>
-                        {tgUser.subscription.daysLeft} / {tgUser.subscription.daysTotal} дней
-                      </span>
+                      <span>{sub.daysLeft} / {sub.daysTotal} дней</span>
                     </div>
                     <div className="h-1.5 bg-dark-border rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full animate-neon-pulse"
+                        className="h-full rounded-full"
                         style={{
-                          width: `${(tgUser.subscription.daysLeft / tgUser.subscription.daysTotal) * 100}%`,
-                          background: "linear-gradient(90deg, rgba(0,255,255,0.6), rgba(0,255,255,1))",
+                          width: `${(sub.daysLeft / sub.daysTotal) * 100}%`,
+                          background: "linear-gradient(90deg, rgba(0,255,255,0.6), #00ffff)",
                           boxShadow: "0 0 8px rgba(0,255,255,0.6)",
                         }}
                       />
@@ -303,17 +274,17 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* VPN Config card */}
+            {/* VPN Config */}
             <div className="cyber-card rounded-2xl p-6">
               <div className="font-mono-ibm text-xs text-neon-cyan/50 tracking-widest mb-1">// VPN КОНФИГ</div>
               <div className="font-orbitron text-lg font-bold text-white mb-4">Получить конфигурацию</div>
 
-              {canGetConfig ? (
+              {hasActiveSub ? (
                 <>
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-neon-green/20 bg-neon-green/5 mb-4">
                     <Icon name="CheckCircle" size={16} className="text-neon-green flex-shrink-0" />
                     <span className="font-ibm text-sm text-white/70">
-                      Конфиг доступен — подписка активна и аккаунт привязан к Telegram
+                      Подписка активна — конфиг доступен для скачивания
                     </span>
                   </div>
                   <div className="flex gap-3 flex-wrap">
@@ -330,27 +301,12 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </>
-              ) : !isTg ? (
-                <div className="flex items-center gap-4 p-4 rounded-xl border border-neon-purple/20 bg-neon-purple/5">
-                  <Icon name="Lock" size={18} className="text-neon-purple flex-shrink-0" />
-                  <div>
-                    <div className="font-orbitron text-xs text-neon-purple mb-1">ТОЛЬКО ДЛЯ TELEGRAM</div>
-                    <div className="font-ibm text-sm text-white/50">
-                      Привяжи Telegram-аккаунт, чтобы получить VPN-конфиг
-                    </div>
-                  </div>
-                  <button className="ml-auto flex-shrink-0 cyber-btn-secondary px-4 py-2 text-xs rounded-lg font-orbitron tracking-widest">
-                    ПРИВЯЗАТЬ
-                  </button>
-                </div>
               ) : (
                 <div className="flex items-center gap-4 p-4 rounded-xl border border-yellow-400/20 bg-yellow-400/5">
                   <Icon name="AlertTriangle" size={18} className="text-yellow-400 flex-shrink-0" />
                   <div>
                     <div className="font-orbitron text-xs text-yellow-400 mb-1">ПОДПИСКА НЕАКТИВНА</div>
-                    <div className="font-ibm text-sm text-white/50">
-                      Оформи подписку чтобы получить VPN-конфиг
-                    </div>
+                    <div className="font-ibm text-sm text-white/50">Оформи подписку чтобы получить VPN-конфиг</div>
                   </div>
                   <button className="ml-auto flex-shrink-0 cyber-btn-primary px-4 py-2 text-xs rounded-lg font-orbitron tracking-widest">
                     199 ₽/МЕС
@@ -362,40 +318,20 @@ export default function Dashboard() {
             {/* Quick actions */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { icon: "Send", label: "Открыть бот", sub: "@sbsmanager_bot", color: "cyan", action: true },
-                { icon: "RefreshCw", label: "Продлить", sub: "199 ₽/мес", color: "cyan", action: hasActiveSub },
-                { icon: "Users", label: "Рефералы", sub: isTg ? `${tgUser?.referrals.count} чел.` : "Недоступно", color: isTg ? "cyan" : "none", action: isTg },
-                { icon: "Star", label: "Яндекс Семья", sub: isTg && hasActiveSub ? "Активна" : "Недоступно", color: isTg && hasActiveSub ? "green" : "none", action: isTg && hasActiveSub },
+                { icon: "Send", label: "Открыть бот", sub: "@sbsmanager_bot", active: true },
+                { icon: "RefreshCw", label: "Продлить", sub: "199 ₽/мес", active: true },
+                { icon: "Users", label: "Рефералы", sub: `${user.referrals.count} чел.`, active: true },
+                { icon: "Star", label: "Яндекс Семья", sub: hasActiveSub ? "Активна" : "Недоступно", active: hasActiveSub },
               ].map((item) => (
                 <button
                   key={item.label}
-                  disabled={!item.action}
+                  disabled={!item.active}
                   className={`p-4 rounded-xl border text-left transition-all duration-200 ${
-                    item.action
-                      ? "cyber-card hover:-translate-y-0.5"
-                      : "border-dark-border bg-dark-card/50 opacity-40 cursor-not-allowed"
+                    item.active ? "cyber-card hover:-translate-y-0.5" : "border-dark-border bg-dark-card/50 opacity-40 cursor-not-allowed"
                   }`}
                 >
-                  <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
-                      item.color === "cyan"
-                        ? "border border-neon-cyan/25 bg-neon-cyan/8"
-                        : item.color === "green"
-                        ? "border border-neon-green/25 bg-neon-green/8"
-                        : "border border-dark-border bg-dark-bg"
-                    }`}
-                  >
-                    <Icon
-                      name={item.icon}
-                      size={14}
-                      className={
-                        item.color === "cyan"
-                          ? "text-neon-cyan"
-                          : item.color === "green"
-                          ? "text-neon-green"
-                          : "text-white/20"
-                      }
-                    />
+                  <div className="w-8 h-8 rounded-lg border border-neon-cyan/25 bg-neon-cyan/8 flex items-center justify-center mb-3">
+                    <Icon name={item.icon} size={14} className="text-neon-cyan" />
                   </div>
                   <div className="font-orbitron text-xs text-white mb-0.5">{item.label}</div>
                   <div className="font-mono-ibm text-xs text-white/30">{item.sub}</div>
@@ -405,7 +341,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ TAB: PAYMENTS ════════════════════════════════ */}
+        {/* ══ TAB: PAYMENTS ══════════════════════════════════ */}
         {activeTab === "payments" && (
           <div className="animate-fade-in-up">
             <div className="cyber-card rounded-2xl overflow-hidden">
@@ -420,7 +356,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="divide-y divide-dark-border">
-                  {(user.payments as typeof MOCK_TG_USER.payments).map((p) => (
+                  {user.payments.map((p) => (
                     <div key={p.id} className="px-6 py-4 flex items-center gap-4 hover:bg-neon-cyan/2 transition-colors">
                       <div className="w-8 h-8 rounded-lg border border-neon-green/20 bg-neon-green/5 flex items-center justify-center flex-shrink-0">
                         <Icon name="CheckCircle" size={14} className="text-neon-green" />
@@ -441,27 +377,20 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ TAB: REFERRALS ═══════════════════════════════ */}
-        {activeTab === "referrals" && isTg && tgUser && (
+        {/* ══ TAB: REFERRALS ═════════════════════════════════ */}
+        {activeTab === "referrals" && (
           <div className="space-y-4 animate-fade-in-up">
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: "ПРИГЛАШЕНО", value: tgUser.referrals.count, unit: "чел.", color: "cyan" },
-                { label: "ЗАРАБОТАНО", value: tgUser.referrals.bonus, unit: "", color: "green" },
+                { label: "ПРИГЛАШЕНО", value: user.referrals.count, unit: "чел.", color: "cyan" },
+                { label: "ЗАРАБОТАНО", value: user.referrals.bonus, unit: "", color: "green" },
                 { label: "СКИДКА", value: "10%", unit: "за реф.", color: "purple" },
               ].map((s) => (
                 <div key={s.label} className="cyber-card rounded-xl p-5 text-center">
                   <div className="font-mono-ibm text-xs text-white/30 tracking-widest mb-2">{s.label}</div>
-                  <div
-                    className={`font-orbitron text-2xl font-black ${
-                      s.color === "cyan"
-                        ? "neon-text-cyan"
-                        : s.color === "green"
-                        ? "text-neon-green"
-                        : "text-neon-purple"
-                    }`}
-                  >
+                  <div className={`font-orbitron text-2xl font-black ${
+                    s.color === "cyan" ? "neon-text-cyan" : s.color === "green" ? "text-neon-green" : "text-neon-purple"
+                  }`}>
                     {s.value}
                   </div>
                   {s.unit && <div className="font-mono-ibm text-xs text-white/30 mt-0.5">{s.unit}</div>}
@@ -469,14 +398,13 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* Ref link */}
             <div className="cyber-card rounded-2xl p-6">
               <div className="font-mono-ibm text-xs text-neon-cyan/50 tracking-widest mb-1">// РЕФЕРАЛЬНАЯ ССЫЛКА</div>
               <div className="font-orbitron text-base font-bold text-white mb-4">Пригласи друга</div>
               <div className="flex items-center gap-3 p-3 rounded-xl border border-dark-border bg-dark-bg/60 mb-4">
-                <span className="flex-1 font-mono-ibm text-xs text-white/50 truncate">{tgUser.referrals.link}</span>
+                <span className="flex-1 font-mono-ibm text-xs text-white/50 truncate">{user.referrals.link}</span>
                 <button
-                  onClick={() => copyText(tgUser.referrals.link, setRefCopied)}
+                  onClick={() => copyText(user.referrals.link, setRefCopied)}
                   className="flex-shrink-0 cyber-btn-primary px-3 py-1.5 text-xs rounded-lg font-orbitron tracking-widest flex items-center gap-1.5"
                 >
                   <Icon name={refCopied ? "Check" : "Copy"} size={12} />
@@ -490,8 +418,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ══ TAB: FAMILY ══════════════════════════════════ */}
-        {activeTab === "family" && isTg && tgUser && (
+        {/* ══ TAB: FAMILY ════════════════════════════════════ */}
+        {activeTab === "family" && (
           <div className="space-y-4 animate-fade-in-up">
             <div className="cyber-card rounded-2xl p-6">
               <div className="flex items-start justify-between mb-5">
@@ -499,7 +427,7 @@ export default function Dashboard() {
                   <div className="font-mono-ibm text-xs text-neon-cyan/50 tracking-widest mb-1">// ЯНДЕКС ПЛЮС</div>
                   <div className="font-orbitron text-lg font-bold text-white">Семейная группа</div>
                 </div>
-                {tgUser.yandexFamily.status === "active" ? (
+                {user.yandexFamily.status === "active" ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-neon-green/30 bg-neon-green/8 font-mono-ibm text-xs text-neon-green">
                     <span className="w-1.5 h-1.5 rounded-full status-dot-online" />
                     АКТИВНА
@@ -515,32 +443,31 @@ export default function Dashboard() {
               <div className="mb-5">
                 <div className="flex justify-between font-mono-ibm text-xs text-white/30 mb-2">
                   <span>МЕСТА В ГРУППЕ</span>
-                  <span>{tgUser.yandexFamily.used} / {tgUser.yandexFamily.slots} занято</span>
+                  <span>{user.yandexFamily.used} / {user.yandexFamily.slots} занято</span>
                 </div>
                 <div className="flex gap-1.5">
-                  {Array.from({ length: tgUser.yandexFamily.slots }).map((_, i) => (
+                  {Array.from({ length: user.yandexFamily.slots }).map((_, i) => (
                     <div
                       key={i}
-                      className={`flex-1 h-2 rounded-full ${
-                        i < tgUser.yandexFamily.used
-                          ? "bg-neon-cyan"
-                          : "bg-dark-border"
-                      }`}
-                      style={i < tgUser.yandexFamily.used ? { boxShadow: "0 0 6px rgba(0,255,255,0.5)" } : {}}
+                      className="flex-1 h-2 rounded-full"
+                      style={
+                        i < user.yandexFamily.used
+                          ? { background: "#00ffff", boxShadow: "0 0 6px rgba(0,255,255,0.5)" }
+                          : { background: "#1a2540" }
+                      }
                     />
                   ))}
                 </div>
               </div>
 
-              {/* Invite link */}
               {hasActiveSub ? (
                 <>
                   <div className="flex items-center gap-3 p-3 rounded-xl border border-dark-border bg-dark-bg/60 mb-4">
                     <span className="flex-1 font-mono-ibm text-xs text-white/50 truncate">
-                      {tgUser.yandexFamily.inviteLink}
+                      {user.yandexFamily.inviteLink}
                     </span>
                     <button
-                      onClick={() => copyText(tgUser.yandexFamily.inviteLink, setInviteCopied)}
+                      onClick={() => copyText(user.yandexFamily.inviteLink, setInviteCopied)}
                       className="flex-shrink-0 cyber-btn-primary px-3 py-1.5 text-xs rounded-lg font-orbitron tracking-widest flex items-center gap-1.5"
                     >
                       <Icon name={inviteCopied ? "Check" : "Copy"} size={12} />
@@ -567,7 +494,13 @@ export default function Dashboard() {
             <div className="cyber-card rounded-xl p-5">
               <div className="font-mono-ibm text-xs text-white/30 mb-3">ЧТО ДАЁТ ЯНДЕКС ПЛЮС СЕМЬЯ</div>
               <ul className="space-y-2">
-                {["Яндекс Музыка без рекламы", "Кинопоиск — фильмы и сериалы", "Яндекс Такси — кешбэк баллами", "Яндекс Маркет — бонусы", "До 6 аккаунтов в одной группе"].map((f) => (
+                {[
+                  "Яндекс Музыка без рекламы",
+                  "Кинопоиск — фильмы и сериалы",
+                  "Яндекс Такси — кешбэк баллами",
+                  "Яндекс Маркет — бонусы",
+                  "До 6 аккаунтов в одной группе",
+                ].map((f) => (
                   <li key={f} className="flex items-center gap-2 font-ibm text-sm text-white/60">
                     <div className="w-1 h-1 rounded-full bg-neon-cyan flex-shrink-0" />
                     {f}
